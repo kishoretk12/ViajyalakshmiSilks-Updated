@@ -1,0 +1,7 @@
+Django>=4.2
+gunicorn
+psycopg2-binary
+cloudinary
+django-cloudinary-storage
+whitenoise
+python-dotenv
