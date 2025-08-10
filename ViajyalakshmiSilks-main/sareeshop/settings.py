@@ -75,17 +75,17 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'starkwolf099@gmail.com'  # Replace with your Gmail
-EMAIL_HOST_PASSWORD = 'emtt culg gvik rmhu'  # Replace with Gmail App Password
-DEFAULT_FROM_EMAIL = 'starkwolf099@gmail.com'  # Replace with your Gmail
+EMAIL_HOST_USER = 'kishore.kumar0728@gmail.com'  # Replace with your Gmail
+EMAIL_HOST_PASSWORD = 'ixtb jmws rxah sybe'  # Replace with Gmail App Password
+DEFAULT_FROM_EMAIL = 'kishore.kumar0728@gmail.com'  # Replace with your Gmail
 # Admin Email for notifications
-ADMIN_EMAIL = 'bharat.codewolf@gmail.com'  # Replace with admin email
+ADMIN_EMAIL = 'kishore.kumar0728@gmail.com'  # Replace with admin email
 
-# EMAIL_HOST_USER = 'your-email@gmail.com'  # Replace with your Gmail
-# EMAIL_HOST_PASSWORD = 'your-app-password'  # Replace with Gmail App Password
-# DEFAULT_FROM_EMAIL = 'your-email@gmail.com'  # Replace with your Gmail
+# EMAIL_HOST_USER = 'kishore.kumar0728@gmail.com'  # Replace with your Gmail
+# EMAIL_HOST_PASSWORD = 'ixtb jmws rxah sybe'  # Replace with Gmail App Password
+# DEFAULT_FROM_EMAIL = 'kishore.kumar0728@gmail.com'  # Replace with your Gmail
 # # Admin Email for notifications
-# ADMIN_EMAIL = 'your-email@gmail.com'  # Replace with admin email
+# ADMIN_EMAIL = 'kishore.kumar0728@gmail.com'  # Replace with admin email
 
 # Setup Gmail App Password:
 # Enable 2-Factor Authentication on your Gmail account
