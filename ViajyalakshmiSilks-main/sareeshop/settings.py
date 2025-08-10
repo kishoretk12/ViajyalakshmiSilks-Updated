@@ -79,7 +79,7 @@ EMAIL_HOST_USER = 'kishore.kumar0728@gmail.com'  # Replace with your Gmail
 EMAIL_HOST_PASSWORD = 'ixtb jmws rxah sybe'  # Replace with Gmail App Password
 DEFAULT_FROM_EMAIL = 'kishore.kumar0728@gmail.com'  # Replace with your Gmail
 # Admin Email for notifications
-ADMIN_EMAIL = 'kishore.kumar0728@gmail.com'  # Replace with admin email
+ADMIN_EMAIL = 'vijayalakshmisilks96@gmail.com'  # Replace with admin email
 
 # EMAIL_HOST_USER = 'kishore.kumar0728@gmail.com'  # Replace with your Gmail
 # EMAIL_HOST_PASSWORD = 'ixtb jmws rxah sybe'  # Replace with Gmail App Password
