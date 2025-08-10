@@ -62,8 +62,8 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-RAZORPAY_KEY_ID = "rzp_test_OuIWHYOmPaIpC9"
-RAZORPAY_KEY_SECRET = "uCvi9Wo5qm5xdfQwJeK0ueog"
+RAZORPAY_KEY_ID = "rzp_live_7nFW0TaEJ03VGZ"
+RAZORPAY_KEY_SECRET = "QHtzHfWHWQB56SDnUwgkZZlE"
 
 # Authentication Settings
 LOGIN_URL = '/login/'
