@@ -18,7 +18,6 @@ def home_view(request):
 def shop_view(request):
     sarees = Saree.objects.filter(available=True)
     
-    # Get cart items for logged-in users to show different button states
     cart_items = []
     if request.user.is_authenticated:
         try:
@@ -43,7 +42,6 @@ def payment_complete(request):
         order_id = request.POST.get('razorpay_order_id')
         signature = request.POST.get('razorpay_signature')
         
-        # Get all orders with this razorpay_order_id
         orders = Order.objects.filter(razorpay_order_id=order_id)
         if not orders.exists():
             return render(request, 'payment_failed.html')
@@ -52,23 +50,19 @@ def payment_complete(request):
         try:
             client.utility.verify_payment_signature(params)
             
-            # Mark all orders as paid
             for order in orders:
                 order.paid = True
                 order.razorpay_payment_id = payment_id
                 order.razorpay_signature = signature
                 order.save()
             
-            # Send email notifications
             from .email_utils import send_order_notification_to_admin, send_order_confirmation_to_customer
             
             try:
                 # Send notification to admin
                 send_order_notification_to_admin(orders)
                 
-                # Send confirmation to customer (for each order)
-                for order in orders:
-                    send_order_confirmation_to_customer(order)
+                
                     
             except Exception as e:
                 # Log email error but don't fail the payment process
@@ -76,7 +70,6 @@ def payment_complete(request):
                 logger = logging.getLogger(__name__)
                 logger.error(f"Email notification failed: {str(e)}")
             
-            # Clear the user's cart after successful payment
             if request.user.is_authenticated:
                 try:
                     cart = Cart.objects.get(user=request.user)
