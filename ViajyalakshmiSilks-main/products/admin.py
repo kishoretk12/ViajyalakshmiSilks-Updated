@@ -19,7 +19,7 @@ class SareeAdmin(admin.ModelAdmin):
 class OrderAdmin(admin.ModelAdmin):
     list_display = ('id', 'get_customer_name', 'get_delivery_address', 'get_customer_phone', 'saree', 'amount', 'paid', 'get_created_at_ist')
     list_filter = ('paid', 'created_at')
-    search_fields = ('user__first_name', 'user__last_name', 'guest_name', 'saree__name', 'user__userprofile__address')
+    search_fields = ('user__first_name', 'user__last_name', 'guest_name', 'saree__name', 'user__addresses__full_name', 'user__addresses__city')
     readonly_fields = ('get_customer_details',)
     
     def get_customer_name(self, obj):
@@ -60,18 +60,22 @@ class OrderAdmin(admin.ModelAdmin):
         if obj.user:
             try:
                 profile = obj.user.userprofile
+                # Get default address if exists
+                default_address = obj.user.addresses.filter(is_default=True).first()
+                address_text = default_address.get_full_address() if default_address else "No default address"
+                
                 return f"""
                 Name: {obj.user.get_full_name() or obj.user.username}
                 Email: {obj.user.email}
                 Phone: {profile.mobile_number}
-                Address: {profile.address}
+                Default Address: {address_text}
                 """
             except UserProfile.DoesNotExist:
                 return f"""
                 Name: {obj.user.get_full_name() or obj.user.username}
                 Email: {obj.user.email}
                 Phone: Not provided
-                Address: Not provided
+                Default Address: Not provided
                 """
         else:
             return f"""
@@ -90,17 +94,23 @@ class OrderAdmin(admin.ModelAdmin):
 
 @admin.register(UserProfile)
 class UserProfileAdmin(admin.ModelAdmin):
-    list_display = ('user', 'mobile_number', 'get_user_email', 'get_short_address')
-    search_fields = ('user__first_name', 'user__last_name', 'user__username', 'mobile_number', 'address')
-    fields = ('user', 'mobile_number', 'address')
+    list_display = ('user', 'mobile_number', 'get_user_email', 'get_addresses_count')
+    search_fields = ('user__first_name', 'user__last_name', 'user__username', 'mobile_number')
+    fields = ('user', 'mobile_number')
     
     def get_user_email(self, obj):
         return obj.user.email
     get_user_email.short_description = 'Email'
     
-    def get_short_address(self, obj):
-        return obj.address[:30] + '...' if len(obj.address) > 30 else obj.address
-    get_short_address.short_description = 'Address'
+    def get_addresses_count(self, obj):
+        count = obj.user.addresses.count()
+        if count == 0:
+            return "No addresses"
+        elif count == 1:
+            return "1 address"
+        else:
+            return f"{count} addresses"
+    get_addresses_count.short_description = 'Addresses'
 
 @admin.register(Cart)
 class CartAdmin(admin.ModelAdmin):
