@@ -7,6 +7,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+
 def send_order_notification_to_admin(orders):
     """
     Send email notification to admin when new order(s) are placed
@@ -15,9 +16,15 @@ def send_order_notification_to_admin(orders):
         if not orders:
             return False
             
-        # Get first order to determine if single or multiple orders
-        first_order = orders[0] if isinstance(orders, list) else orders
-        orders_list = orders if isinstance(orders, list) else [orders]
+        # Handle QuerySet or list of orders
+        if hasattr(orders, '__iter__') and not isinstance(orders, str):
+            # It's a QuerySet or list
+            orders_list = list(orders)  # Convert QuerySet to list
+        else:
+            # It's a single order
+            orders_list = [orders]
+        
+        first_order = orders_list[0]
         
         # Calculate total amount
         total_amount = sum(order.amount for order in orders_list)
