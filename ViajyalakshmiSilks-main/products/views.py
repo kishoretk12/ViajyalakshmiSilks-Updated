@@ -61,8 +61,9 @@ def payment_complete(request):
             try:
                 # Send notification to admin
                 send_order_notification_to_admin(orders)
-                
-                
+                # Send order confirmation to each customer
+                for order in orders:
+                    send_order_confirmation_to_customer(order) 
                     
             except Exception as e:
                 # Log email error but don't fail the payment process
