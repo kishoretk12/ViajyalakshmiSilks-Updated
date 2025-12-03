@@ -1,0 +1,6 @@
+            # Mark all orders as paid
+            for order in orders:
+                order.paid = True
+                order.razorpay_payment_id = payment_id
+                order.razorpay_signature = signature
+                order.save()

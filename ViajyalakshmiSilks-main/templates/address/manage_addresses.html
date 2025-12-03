@@ -1,0 +1,317 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<style>
+.address-manager-container {
+    max-width: 1000px;
+    margin: 50px auto;
+    padding: 20px;
+}
+
+.manager-header {
+    background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+    color: white;
+    padding: 30px;
+    border-radius: 15px;
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+.manager-title {
+    font-size: 2rem;
+    margin-bottom: 10px;
+    font-weight: 700;
+}
+
+.add-address-section {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.addresses-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 20px;
+}
+
+.address-card {
+    background: white;
+    border: 2px solid #e1e8ed;
+    border-radius: 15px;
+    padding: 25px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.address-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+}
+
+.address-card.default {
+    border-color: #27ae60;
+    background: linear-gradient(135deg, #ffffff 0%, #f8fff8 100%);
+}
+
+.address-name {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #2c3e50;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.default-badge {
+    background: #27ae60;
+    color: white;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.address-full-name {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #34495e;
+    margin-bottom: 15px;
+}
+
+.address-details {
+    color: #666;
+    line-height: 1.6;
+    margin-bottom: 15px;
+    font-size: 0.95rem;
+}
+
+.address-phone {
+    color: #8b4513;
+    font-weight: 600;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+}
+
+.address-phone i {
+    margin-right: 8px;
+}
+
+.address-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: space-between;
+}
+
+.btn-edit {
+    background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+    color: white;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+}
+
+.btn-edit:hover {
+    background: linear-gradient(135deg, #2980b9 0%, #3498db 100%);
+    transform: translateY(-2px);
+    color: white;
+    text-decoration: none;
+}
+
+.btn-delete {
+    background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+    color: white;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+}
+
+.btn-delete:hover {
+    background: linear-gradient(135deg, #c0392b 0%, #e74c3c 100%);
+    transform: translateY(-2px);
+    color: white;
+    text-decoration: none;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #8b4513 0%, #a0522d 100%);
+    color: white;
+    padding: 12px 30px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #a0522d 0%, #8b4513 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(139, 69, 19, 0.3);
+    color: white;
+    text-decoration: none;
+}
+
+.no-addresses {
+    text-align: center;
+    padding: 60px 20px;
+    color: #666;
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.no-addresses i {
+    font-size: 5rem;
+    color: #ddd;
+    margin-bottom: 20px;
+}
+
+.no-addresses h3 {
+    color: #2c3e50;
+    margin-bottom: 15px;
+}
+
+.messages {
+    margin-bottom: 20px;
+}
+
+.messages .alert {
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+}
+
+.messages .alert-success {
+    background-color: #d4edda;
+    border-color: #c3e6cb;
+    color: #155724;
+}
+
+.messages .alert-error {
+    background-color: #f8d7da;
+    border-color: #f5c6cb;
+    color: #721c24;
+}
+
+@media (max-width: 768px) {
+    .address-manager-container {
+        margin: 20px auto;
+        padding: 15px;
+    }
+    
+    .addresses-grid {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+    
+    .address-card {
+        padding: 20px;
+    }
+    
+    .address-actions {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .btn-edit, .btn-delete {
+        justify-content: center;
+    }
+    
+    .manager-title {
+        font-size: 1.5rem;
+    }
+}
+</style>
+
+<div class="address-manager-container">
+    <div class="manager-header">
+        <h1 class="manager-title">Manage Addresses</h1>
+        <p>Add, edit, or delete your delivery addresses</p>
+    </div>
+
+    {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <div class="add-address-section">
+        <a href="{% url 'add_address' %}" class="btn-primary">
+            ➕ Add New Address
+        </a>
+    </div>
+
+    {% if addresses %}
+        <div class="addresses-grid">
+            {% for address in addresses %}
+                <div class="address-card {% if address.is_default %}default{% endif %}">
+                    <div class="address-name">
+                        <span>📍 {{ address.name }}</span>
+                        {% if address.is_default %}
+                            <span class="default-badge">Default</span>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="address-full-name">{{ address.full_name }}</div>
+                    
+                    <div class="address-details">
+                        {{ address.get_full_address }}
+                    </div>
+                    
+                    <div class="address-phone">
+                        <i class="fas fa-phone"></i>
+                        {{ address.phone }}
+                    </div>
+                    
+                    <div class="address-actions">
+                        <a href="{% url 'edit_address' address.id %}" class="btn-edit">
+                            ✏️ Edit
+                        </a>
+                        <a href="{% url 'delete_address' address.id %}" class="btn-delete">
+                            🗑️ Delete
+                        </a>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="no-addresses">
+            <i class="fas fa-map-marker-alt"></i>
+            <h3>No addresses found</h3>
+            <p>You haven't added any addresses yet. Add your first address to get started.</p>
+            
+            <div style="margin-top: 30px;">
+                <a href="{% url 'add_address' %}" class="btn-primary">
+                    ➕ Add Your First Address
+                </a>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

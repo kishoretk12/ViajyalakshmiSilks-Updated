@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% block content %}
+  <h1>Saree Collection</h1>
+  <ul>
+    {% for item in items %}
+      <li>
+        <img src="{{ item.image_url }}" width="150">
+        <h3>{{ item.name }}</h3>
+        <p>₹{{ item.price }}</p>
+      </li>
+    {% endfor %}
+  </ul>
+{% endblock %}

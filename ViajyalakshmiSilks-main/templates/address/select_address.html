@@ -1,0 +1,309 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<style>
+.address-container {
+    max-width: 800px;
+    margin: 50px auto;
+    padding: 20px;
+}
+
+.address-header {
+    background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+    color: white;
+    padding: 30px;
+    border-radius: 15px;
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+.address-title {
+    font-size: 2rem;
+    margin-bottom: 10px;
+    font-weight: 700;
+}
+
+.product-info {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 30px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.product-info h3 {
+    color: #2c3e50;
+    margin-bottom: 10px;
+}
+
+.addresses-section {
+    background: white;
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+}
+
+.address-card {
+    border: 2px solid #e1e8ed;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 15px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.address-card:hover {
+    border-color: #8b4513;
+    box-shadow: 0 5px 15px rgba(139, 69, 19, 0.2);
+}
+
+.address-card.selected {
+    border-color: #8b4513;
+    background: linear-gradient(135deg, #f8f9fa 0%, #fff8e1 100%);
+}
+
+.address-card input[type="radio"] {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    transform: scale(1.2);
+}
+
+.address-name {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #2c3e50;
+    margin-bottom: 5px;
+}
+
+.address-full-name {
+    font-weight: 600;
+    color: #34495e;
+    margin-bottom: 10px;
+}
+
+.address-details {
+    color: #555;
+    line-height: 1.6;
+    margin-bottom: 10px;
+}
+
+.address-phone {
+    color: #8b4513;
+    font-weight: 600;
+}
+
+.default-badge {
+    background: #27ae60;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin-left: 10px;
+}
+
+.no-address {
+    text-align: center;
+    padding: 40px;
+    color: #666;
+}
+
+.no-address i {
+    font-size: 4rem;
+    color: #ddd;
+    margin-bottom: 20px;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #8b4513 0%, #a0522d 100%);
+    color: white;
+    padding: 12px 30px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-block;
+    margin-right: 15px;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #a0522d 0%, #8b4513 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(139, 69, 19, 0.3);
+    color: white;
+    text-decoration: none;
+}
+
+.btn-secondary {
+    background: #6c757d;
+    color: white;
+    padding: 12px 30px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.btn-secondary:hover {
+    background: #5a6268;
+    transform: translateY(-2px);
+    color: white;
+    text-decoration: none;
+}
+
+.action-buttons {
+    text-align: center;
+    padding: 30px 0;
+}
+
+@media (max-width: 768px) {
+    .address-container {
+        margin: 20px auto;
+        padding: 15px;
+    }
+    
+    .address-header {
+        padding: 20px;
+    }
+    
+    .address-title {
+        font-size: 1.5rem;
+    }
+    
+    .action-buttons {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .btn-primary, .btn-secondary {
+        margin: 5px 0;
+        width: 100%;
+    }
+}
+</style>
+
+<div class="address-container">
+    <div class="address-header">
+        <h1 class="address-title">Select Delivery Address</h1>
+        <p>Choose where you want your order to be delivered</p>
+    </div>
+
+    {% if is_buy_now %}
+    <div class="product-info">
+        <h3>🛍️ Product: {{ saree.name }}</h3>
+        <p><strong>Price:</strong> ₹{{ saree.price }}</p>
+    </div>
+    {% endif %}
+
+    {% if is_checkout %}
+    <div class="product-info">
+        <h3>🛒 Cart Items: {{ cart.get_total_items }} item{{ cart.get_total_items|pluralize }}</h3>
+        <p><strong>Total:</strong> ₹{{ cart.get_total_price }}</p>
+    </div>
+    {% endif %}
+
+    <div class="addresses-section">
+        {% if addresses %}
+            <form method="post" id="addressForm">
+                {% csrf_token %}
+                {% for address in addresses %}
+                    <div class="address-card" onclick="selectAddress({{ address.id }})">
+                        <input type="radio" name="address_id" value="{{ address.id }}" 
+                               {% if address.is_default %}checked{% endif %} 
+                               onchange="updateSelection(this)">
+                        
+                        <div class="address-name">
+                            📍 {{ address.name }}
+                            {% if address.is_default %}
+                                <span class="default-badge">Default</span>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="address-full-name">{{ address.full_name }}</div>
+                        
+                        <div class="address-details">
+                            {{ address.get_full_address }}
+                        </div>
+                        
+                        <div class="address-phone">📞 {{ address.phone }}</div>
+                    </div>
+                {% endfor %}
+                
+                <div class="action-buttons">
+                    <button type="submit" class="btn-primary" id="continueBtn" disabled>
+                        Continue to Payment 💳
+                    </button>
+                    
+                    {% if is_buy_now %}
+                        <a href="{% url 'add_address' %}?action=buy_now&product_id={{ saree.id }}" class="btn-secondary">
+                            ➕ Add New Address
+                        </a>
+                    {% else %}
+                        <a href="{% url 'add_address' %}?action=checkout" class="btn-secondary">
+                            ➕ Add New Address
+                        </a>
+                    {% endif %}
+                </div>
+            </form>
+        {% else %}
+            <div class="no-address">
+                <i class="fas fa-map-marker-alt"></i>
+                <h3>No addresses found</h3>
+                <p>Please add a delivery address to continue</p>
+                
+                <div class="action-buttons">
+                    {% if is_buy_now %}
+                        <a href="{% url 'add_address' %}?action=buy_now&product_id={{ saree.id }}" class="btn-primary">
+                            ➕ Add Your First Address
+                        </a>
+                    {% else %}
+                        <a href="{% url 'add_address' %}?action=checkout" class="btn-primary">
+                            ➕ Add Your First Address
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+function selectAddress(addressId) {
+    const radio = document.querySelector(`input[value="${addressId}"]`);
+    radio.checked = true;
+    updateSelection(radio);
+}
+
+function updateSelection(radio) {
+    // Remove selected class from all cards
+    document.querySelectorAll('.address-card').forEach(card => {
+        card.classList.remove('selected');
+    });
+    
+    // Add selected class to current card
+    if (radio.checked) {
+        radio.closest('.address-card').classList.add('selected');
+        document.getElementById('continueBtn').disabled = false;
+    }
+}
+
+// Initialize selection on page load
+document.addEventListener('DOMContentLoaded', function() {
+    const checkedRadio = document.querySelector('input[name="address_id"]:checked');
+    if (checkedRadio) {
+        updateSelection(checkedRadio);
+    }
+});
+</script>
+{% endblock %}

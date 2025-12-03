@@ -1,0 +1,174 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+.checkout-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.checkout-header {
+    text-align: center;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid #f0f0f0;
+}
+
+.order-summary {
+    background-color: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.order-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid #ddd;
+}
+
+.order-item:last-child {
+    border-bottom: none;
+    font-weight: bold;
+    font-size: 18px;
+    margin-top: 10px;
+    padding-top: 15px;
+    border-top: 2px solid deeppink;
+    color: deeppink;
+}
+
+.payment-section {
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    text-align: center;
+}
+
+.btn {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    font-weight: bold;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-block;
+    margin: 5px;
+}
+
+.btn-primary {
+    background-color: deeppink;
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: #c91780;
+}
+
+.btn-secondary {
+    background-color: #6c757d;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background-color: #545b62;
+}
+</style>
+
+<div class="checkout-container">
+    <div class="checkout-header">
+        <h1>🛒 Checkout</h1>
+        <p>Review your order and proceed to payment</p>
+    </div>
+
+    <div class="order-summary">
+        <h3>Order Summary</h3>
+        {% for order in orders %}
+            <div class="order-item">
+                <span>{{ order.saree.name }} × {{ order.quantity }}</span>
+                <span>₹{{ order.amount }}</span>
+            </div>
+        {% endfor %}
+        <div class="order-item">
+            <span>Total Amount:</span>
+            <span>₹{{ total_amount }}</span>
+        </div>
+    </div>
+
+    <div class="payment-section">
+        <h3>Payment</h3>
+        <p>Click below to proceed with secure payment via Razorpay</p>
+        
+        <button id="rzp-button" class="btn btn-primary">Pay ₹{{ total_amount }}</button>
+        <a href="{% url 'cart' %}" class="btn btn-secondary">Back to Cart</a>
+    </div>
+</div>
+
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+var options = {
+    "key": "{{ razorpay_key }}",
+    "amount": "{{ amount }}",
+    "currency": "INR",
+    "name": "Vijayalakshmi Silks",
+    "description": "Saree Purchase",
+    "order_id": "{{ order_id }}",
+    "handler": function (response) {
+        // Create a form and submit payment details
+        var form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '{% url "payment_complete" %}';
+        
+        // Add CSRF token
+        var csrfInput = document.createElement('input');
+        csrfInput.type = 'hidden';
+        csrfInput.name = 'csrfmiddlewaretoken';
+        csrfInput.value = '{{ csrf_token }}';
+        form.appendChild(csrfInput);
+        
+        // Add payment details
+        var paymentIdInput = document.createElement('input');
+        paymentIdInput.type = 'hidden';
+        paymentIdInput.name = 'razorpay_payment_id';
+        paymentIdInput.value = response.razorpay_payment_id;
+        form.appendChild(paymentIdInput);
+        
+        var orderIdInput = document.createElement('input');
+        orderIdInput.type = 'hidden';
+        orderIdInput.name = 'razorpay_order_id';
+        orderIdInput.value = response.razorpay_order_id;
+        form.appendChild(orderIdInput);
+        
+        var signatureInput = document.createElement('input');
+        signatureInput.type = 'hidden';
+        signatureInput.name = 'razorpay_signature';
+        signatureInput.value = response.razorpay_signature;
+        form.appendChild(signatureInput);
+        
+        document.body.appendChild(form);
+        form.submit();
+    },
+    "prefill": {
+        "name": "{{ user.get_full_name }}",
+        "email": "{{ user.email }}",
+        "contact": "{{ user.userprofile.mobile_number }}"
+    },
+    "theme": {
+        "color": "#e91e63"
+    }
+};
+
+var rzp = new Razorpay(options);
+
+document.getElementById('rzp-button').onclick = function(e) {
+    rzp.open();
+    e.preventDefault();
+}
+</script>
+{% endblock %}
