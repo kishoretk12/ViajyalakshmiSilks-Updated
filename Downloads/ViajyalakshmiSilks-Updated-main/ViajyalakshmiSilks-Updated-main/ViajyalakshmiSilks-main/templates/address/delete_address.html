@@ -1,0 +1,207 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<style>
+.delete-container {
+    max-width: 500px;
+    margin: 50px auto;
+    padding: 20px;
+}
+
+.delete-header {
+    background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+    color: white;
+    padding: 30px;
+    border-radius: 15px;
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+.delete-title {
+    font-size: 2rem;
+    margin-bottom: 10px;
+    font-weight: 700;
+}
+
+.delete-content {
+    background: white;
+    padding: 40px;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    text-align: center;
+}
+
+.warning-icon {
+    font-size: 4rem;
+    color: #e74c3c;
+    margin-bottom: 20px;
+}
+
+.address-preview {
+    background: #f8f9fa;
+    border: 2px solid #e9ecef;
+    border-radius: 10px;
+    padding: 20px;
+    margin: 20px 0;
+    text-align: left;
+}
+
+.address-name {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #2c3e50;
+    margin-bottom: 10px;
+}
+
+.address-details {
+    color: #666;
+    line-height: 1.6;
+    margin-bottom: 10px;
+}
+
+.address-phone {
+    color: #8b4513;
+    font-weight: 600;
+}
+
+.default-badge {
+    background: #27ae60;
+    color: white;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin-left: 10px;
+}
+
+.warning-text {
+    color: #666;
+    margin: 20px 0;
+    font-size: 1.1rem;
+    line-height: 1.6;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    margin-top: 30px;
+}
+
+.btn-danger {
+    background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+    color: white;
+    padding: 12px 30px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-danger:hover {
+    background: linear-gradient(135deg, #c0392b 0%, #e74c3c 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(231, 76, 60, 0.3);
+}
+
+.btn-secondary {
+    background: #6c757d;
+    color: white;
+    padding: 12px 30px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.btn-secondary:hover {
+    background: #5a6268;
+    transform: translateY(-2px);
+    color: white;
+    text-decoration: none;
+}
+
+@media (max-width: 768px) {
+    .delete-container {
+        margin: 20px auto;
+        padding: 15px;
+    }
+    
+    .delete-content {
+        padding: 25px;
+    }
+    
+    .action-buttons {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .btn-danger, .btn-secondary {
+        width: 100%;
+        text-align: center;
+    }
+    
+    .delete-title {
+        font-size: 1.5rem;
+    }
+}
+</style>
+
+<div class="delete-container">
+    <div class="delete-header">
+        <h1 class="delete-title">Delete Address</h1>
+        <p>Are you sure you want to delete this address?</p>
+    </div>
+
+    <div class="delete-content">
+        <div class="warning-icon">⚠️</div>
+        
+        <div class="address-preview">
+            <div class="address-name">
+                📍 {{ address.name }}
+                {% if address.is_default %}
+                    <span class="default-badge">Default</span>
+                {% endif %}
+            </div>
+            
+            <div class="address-details">
+                <strong>{{ address.full_name }}</strong><br>
+                {{ address.get_full_address }}
+            </div>
+            
+            <div class="address-phone">
+                📞 {{ address.phone }}
+            </div>
+        </div>
+
+        <div class="warning-text">
+            <strong>This action cannot be undone!</strong><br>
+            Once deleted, this address will be permanently removed from your account.
+            {% if address.is_default %}
+                <br><br>
+                <strong>Note:</strong> This is your default address. If you delete it, 
+                you'll need to set another address as default.
+            {% endif %}
+        </div>
+
+        <form method="post" style="display: inline;">
+            {% csrf_token %}
+            <div class="action-buttons">
+                <button type="submit" class="btn-danger">
+                    🗑️ Yes, Delete Address
+                </button>
+                <a href="{% url 'manage_addresses' %}" class="btn-secondary">
+                    ← Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

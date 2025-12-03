@@ -1,0 +1,275 @@
+{% extends "base.html" %}
+{% load static %}
+{% load tz %}
+
+{% block content %}
+<style>
+.profile-container {
+    max-width: 1000px;
+    margin: 50px auto;
+    padding: 20px;
+}
+
+.profile-header {
+    background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+    color: white;
+    padding: 40px;
+    border-radius: 15px;
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+.profile-title {
+    font-size: 2.2rem;
+    margin-bottom: 10px;
+    font-weight: 700;
+}
+
+.profile-subtitle {
+    font-size: 1.1rem;
+    opacity: 0.9;
+}
+
+.profile-content {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 30px;
+}
+
+.profile-info {
+    background: white;
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    height: fit-content;
+}
+
+.info-title {
+    color: #2c3e50;
+    font-size: 1.4rem;
+    margin-bottom: 20px;
+    font-weight: 700;
+    border-bottom: 2px solid #8b4513;
+    padding-bottom: 10px;
+}
+
+.info-item {
+    margin-bottom: 15px;
+}
+
+.info-label {
+    font-weight: 600;
+    color: #333;
+    display: block;
+    margin-bottom: 5px;
+}
+
+.info-value {
+    color: #666;
+    font-size: 1rem;
+}
+
+.orders-section {
+    background: white;
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+
+.orders-title {
+    color: #2c3e50;
+    font-size: 1.4rem;
+    margin-bottom: 20px;
+    font-weight: 700;
+    border-bottom: 2px solid #8b4513;
+    padding-bottom: 10px;
+}
+
+.order-card {
+    border: 1px solid #e1e8ed;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+
+.order-card:hover {
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    transform: translateY(-2px);
+}
+
+.order-header {
+    display: flex;
+    justify-content: between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.order-id {
+    font-weight: 700;
+    color: #2c3e50;
+}
+
+.order-status {
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.status-paid {
+    background: #d4edda;
+    color: #155724;
+}
+
+.status-pending {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.order-details {
+    color: #666;
+    line-height: 1.6;
+}
+
+.no-orders {
+    text-align: center;
+    color: #666;
+    font-style: italic;
+    padding: 40px 20px;
+}
+
+.btn-logout {
+    background: #dc3545;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-block;
+    margin-top: 20px;
+}
+
+.btn-logout:hover {
+    background: #c82333;
+    transform: translateY(-2px);
+    color: white;
+    text-decoration: none;
+}
+
+@media (max-width: 768px) {
+    .profile-content {
+        grid-template-columns: 1fr;
+    }
+    
+    .profile-container {
+        margin: 20px auto;
+        padding: 15px;
+    }
+    
+    .profile-header {
+        padding: 25px;
+    }
+    
+    .profile-title {
+        font-size: 1.8rem;
+    }
+}
+</style>
+
+<div class="profile-container">
+    <!-- Profile Header -->
+    <div class="profile-header">
+        <h1 class="profile-title">Welcome, {{ user.get_full_name|default:user.username }}!</h1>
+        <p class="profile-subtitle">Manage your account and view your order history</p>
+    </div>
+    
+    <!-- Display Messages -->
+    {% if messages %}
+        <div class="messages" style="margin-bottom: 20px;">
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}" style="padding: 12px 15px; border-radius: 8px; margin-bottom: 10px; background-color: {% if message.tags == 'success' %}#d4edda{% else %}#f8d7da{% endif %}; color: {% if message.tags == 'success' %}#155724{% else %}#721c24{% endif %};">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+    
+    <div class="profile-content">
+        <!-- Profile Information -->
+        <div class="profile-info">
+            <h2 class="info-title">Profile Information</h2>
+            
+            <div class="info-item">
+                <span class="info-label">Full Name:</span>
+                <span class="info-value">{{ user.get_full_name|default:"Not provided" }}</span>
+            </div>
+            
+            <div class="info-item">
+                <span class="info-label">Username:</span>
+                <span class="info-value">{{ user.username }}</span>
+            </div>
+            
+            <div class="info-item">
+                <span class="info-label">Email:</span>
+                <span class="info-value">{{ user.email }}</span>
+            </div>
+            
+            <div class="info-item">
+                <span class="info-label">Mobile Number:</span>
+                <span class="info-value">{{ profile.mobile_number|default:"Not provided" }}</span>
+            </div>
+            
+            <div class="info-item">
+                <span class="info-label">Addresses:</span>
+                <span class="info-value">
+                    <a href="{% url 'manage_addresses' %}" style="color: #8b4513; text-decoration: none; font-weight: 600;">
+                        Manage Addresses →
+                    </a>
+                </span>
+            </div>
+            
+            <div class="info-item">
+                <span class="info-label">Member Since:</span>
+                <span class="info-value">{{ user.date_joined|localtime|date:"F d, Y" }} IST</span>
+            </div>
+            
+            <a href="{% url 'logout' %}" class="btn-logout">Logout</a>
+        </div>
+        
+        <!-- Order History -->
+        <div class="orders-section">
+            <h2 class="orders-title">Order History</h2>
+            
+            {% if orders %}
+                {% for order in orders %}
+                    <div class="order-card">
+                        <div class="order-header">
+                            <span class="order-id">Order #{{ order.id }}</span>
+                            <span class="order-status {% if order.paid %}status-paid{% else %}status-pending{% endif %}">
+                                {% if order.paid %}Paid{% else %}Pending{% endif %}
+                            </span>
+                        </div>
+                        <div class="order-details">
+                            <strong>{{ order.saree.name }}</strong><br>
+                            Amount: ₹{{ order.amount }}<br>
+                            Date: {{ order.created_at|localtime|date:"F d, Y at h:i A" }} IST<br>
+                            {% if order.razorpay_payment_id %}
+                                Payment ID: {{ order.razorpay_payment_id }}
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div class="no-orders">
+                    <p>You haven't placed any orders yet.</p>
+                    <p><a href="{% url 'shop' %}" style="color: #8b4513; font-weight: 600;">Start shopping now!</a></p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

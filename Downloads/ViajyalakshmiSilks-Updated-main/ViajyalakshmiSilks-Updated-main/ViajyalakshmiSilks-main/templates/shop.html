@@ -1,0 +1,752 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+/* Image Carousel Styles */
+.product-card {
+    border: 1px solid #ddd;
+    padding: 15px;
+    margin: 10px;
+    width: 250px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: transform 0.2s ease;
+}
+
+.product-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.image-carousel {
+    position: relative;
+    width: 100%;
+    height: 250px;
+    overflow: hidden;
+    border-radius: 6px;
+    margin-bottom: 10px;
+    cursor: zoom-in;
+}
+
+.carousel-images {
+    display: flex;
+    transition: transform 0.3s ease;
+    height: 100%;
+}
+
+.carousel-image {
+    min-width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.carousel-image:hover {
+    transform: scale(1.1);
+}
+
+/* Navigation Arrows */
+.carousel-arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(0,0,0,0.5);
+    color: white;
+    border: none;
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    z-index: 10;
+    opacity: 0;
+    transition: opacity 0.3s ease, background-color 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.image-carousel:hover .carousel-arrow {
+    opacity: 1;
+}
+
+.carousel-arrow:hover {
+    background: rgba(0,0,0,0.8);
+}
+
+.carousel-arrow.prev {
+    left: 8px;
+}
+
+.carousel-arrow.next {
+    right: 8px;
+}
+
+/* Image Zoom Modal */
+.zoom-modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.9);
+    cursor: zoom-out;
+}
+
+.zoom-modal.active {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.zoom-content {
+    position: relative;
+    max-width: 90%;
+    max-height: 90%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.zoom-image {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    transition: transform 0.3s ease;
+}
+
+.zoom-close {
+    position: absolute;
+    top: 20px;
+    right: 30px;
+    color: white;
+    font-size: 40px;
+    font-weight: bold;
+    cursor: pointer;
+    z-index: 1001;
+}
+
+.zoom-close:hover {
+    color: #ccc;
+}
+
+.zoom-arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(255,255,255,0.2);
+    color: white;
+    border: none;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 20px;
+    font-weight: bold;
+    z-index: 1001;
+    transition: background-color 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.zoom-arrow:hover {
+    background: rgba(255,255,255,0.4);
+}
+
+.zoom-arrow.prev {
+    left: 20px;
+}
+
+.zoom-arrow.next {
+    right: 20px;
+}
+
+/* Image counter */
+.zoom-counter {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: white;
+    background: rgba(0,0,0,0.5);
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 14px;
+}
+
+.carousel-dots {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    margin-top: 8px;
+}
+
+.carousel-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: #ccc;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.carousel-dot.active {
+    background-color: deeppink;
+}
+
+.carousel-dot:hover {
+    background-color: #999;
+}
+
+.product-info {
+    text-align: center;
+}
+
+.product-name {
+    font-size: 16px;
+    font-weight: bold;
+    margin: 8px 0;
+    color: #333;
+}
+
+.product-price {
+    font-size: 18px;
+    color: deeppink;
+    font-weight: bold;
+    margin: 8px 0;
+}
+
+.product-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.buy-button, .cart-button {
+    padding: 12px 16px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    flex: 1;
+    text-align: center;
+    min-width: 100px;
+    max-width: 140px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.buy-button::before, .cart-button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s;
+}
+
+.buy-button:hover::before, .cart-button:hover::before {
+    left: 100%;
+}
+
+.buy-button {
+    background: linear-gradient(135deg, #e91e63, #c2185b);
+    color: white;
+    border: 2px solid transparent;
+}
+
+.buy-button:hover {
+    background: linear-gradient(135deg, #c2185b, #ad1457);
+    color: white;
+    text-decoration: none;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(233, 30, 99, 0.4);
+}
+
+.cart-button {
+    background: linear-gradient(135deg, #4caf50, #388e3c);
+    color: white;
+    border: 2px solid transparent;
+}
+
+.cart-button:hover {
+    background: linear-gradient(135deg, #388e3c, #2e7d32);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(76, 175, 80, 0.4);
+}
+
+.cart-button.already-in-cart {
+    background: linear-gradient(135deg, #9e9e9e, #757575);
+    color: #fff;
+    cursor: not-allowed;
+    opacity: 0.8;
+    transform: none;
+}
+
+.cart-button.already-in-cart:hover {
+    background: linear-gradient(135deg, #9e9e9e, #757575);
+    opacity: 0.8;
+    transform: none;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.cart-button.already-in-cart::before {
+    display: none;
+}
+
+.button-icon {
+    font-size: 16px;
+    display: inline-block;
+    transition: transform 0.3s ease;
+}
+
+.buy-button:hover .button-icon,
+.cart-button:hover .button-icon {
+    transform: scale(1.1);
+}
+
+.cart-button.already-in-cart .button-icon {
+    color: #4caf50;
+    font-weight: bold;
+}
+
+/* Loading state for buttons */
+.button-loading {
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+.button-loading .button-icon {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Active/pressed state */
+.buy-button:active, .cart-button:active {
+    transform: translateY(0px);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+
+.add-to-cart-form {
+    flex: 1;
+    margin: 0;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .product-card {
+        width: calc(50% - 20px);
+        margin: 10px 5px;
+    }
+    
+    .product-buttons {
+        flex-direction: row;
+        gap: 8px;
+        margin-top: 12px;
+        flex-wrap: nowrap;
+    }
+    
+    .buy-button, .cart-button {
+        padding: 10px 12px;
+        font-size: 12px;
+        min-width: 85px;
+        max-width: 120px;
+        flex: 1;
+        white-space: nowrap;
+    }
+    
+    .button-icon {
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 480px) {
+    .product-card {
+        width: calc(100% - 20px);
+        margin: 10px 10px;
+    }
+    
+    .product-buttons {
+        gap: 6px;
+        flex-wrap: nowrap;
+    }
+    
+    .buy-button, .cart-button {
+        padding: 8px 10px;
+        font-size: 11px;
+        border-radius: 6px;
+        min-width: 75px;
+        max-width: 100px;
+        flex: 1;
+        white-space: nowrap;
+        gap: 3px;
+    }
+    
+    .button-icon {
+        font-size: 13px;
+    }
+}
+</style>
+
+<h2 style="padding: 20px; text-align: center; color: #333;">Our Sarees</h2>
+<div style="display: flex; flex-wrap: wrap; padding: 20px; justify-content: center;">
+    {% for saree in sarees %}
+        <div class="product-card">
+            <!-- Image Carousel -->
+            <div class="image-carousel" onclick="openZoom({{ saree.id }}, 0)">
+                <div class="carousel-images" id="carousel-{{ saree.id }}">
+                    {% for image in saree.get_all_images %}
+                        <img src="{{ image.url }}" alt="{{ saree.name }}" class="carousel-image" data-zoom-src="{{ image.url }}">
+                    {% endfor %}
+                </div>
+                
+                <!-- Navigation Arrows (only show if more than 1 image) -->
+                {% if saree.get_all_images|length > 1 %}
+                    <button class="carousel-arrow prev" onclick="event.stopPropagation(); changeImage({{ saree.id }}, -1)">‹</button>
+                    <button class="carousel-arrow next" onclick="event.stopPropagation(); changeImage({{ saree.id }}, 1)">›</button>
+                {% endif %}
+            </div>
+            
+            <!-- Carousel Dots (only show if more than 1 image) -->
+            {% if saree.get_all_images|length > 1 %}
+                <div class="carousel-dots">
+                    {% for image in saree.get_all_images %}
+                        <div class="carousel-dot {% if forloop.first %}active{% endif %}" 
+                             onclick="showImage({{ saree.id }}, {{ forloop.counter0 }})"></div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+            
+            <!-- Product Info -->
+            <div class="product-info">
+                <h3 class="product-name">{{ saree.name }}</h3>
+                <p class="product-price">₹{{ saree.price }}</p>
+                <div class="product-buttons">
+                    {% if user.is_authenticated %}
+                        {% if saree.id in cart_items %}
+                            <button class="cart-button already-in-cart" disabled>
+                                <span class="button-icon">✓</span>
+                                In Cart
+                            </button>
+                        {% else %}
+                            <form method="post" action="{% url 'add_to_cart' saree.id %}" class="add-to-cart-form" style="display: inline;">
+                                {% csrf_token %}
+                                <button type="submit" class="cart-button">
+                                    <span class="button-icon">🛒</span>
+                                    Add Cart
+                                </button>
+                            </form>
+                        {% endif %}
+                    {% endif %}
+                    <a href="{% url 'buy_now' saree.id %}" class="buy-button">
+                        <span class="button-icon">⚡</span>
+                        Buy Now
+                    </a>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+
+<!-- Zoom Modal -->
+<div class="zoom-modal" id="zoomModal">
+    <span class="zoom-close" onclick="closeZoom()">&times;</span>
+    <div class="zoom-content">
+        <button class="zoom-arrow prev" onclick="changeZoomImage(-1)">‹</button>
+        <img class="zoom-image" id="zoomImage" src="" alt="">
+        <button class="zoom-arrow next" onclick="changeZoomImage(1)">›</button>
+    </div>
+    <div class="zoom-counter" id="zoomCounter">1 / 1</div>
+</div>
+
+<script>
+// Global variables for zoom functionality
+let currentZoomSareeId = null;
+let currentZoomIndex = 0;
+let zoomImages = [];
+let sareeImageIndices = {}; // Track current image index for each saree
+// Initialize saree image indices
+function initializeSareeIndices() {
+    document.querySelectorAll('.carousel-images').forEach(carousel => {
+        const sareeId = carousel.id.split('-')[1];
+        sareeImageIndices[sareeId] = 0;
+    });
+}
+
+function showImage(sareeId, imageIndex) {
+    const carousel = document.getElementById(`carousel-${sareeId}`);
+    const dots = carousel.parentElement.nextElementSibling?.querySelectorAll('.carousel-dot');
+    
+    // Update the index
+    sareeImageIndices[sareeId] = imageIndex;
+    
+    // Move carousel to show selected image
+    const translateX = -imageIndex * 100;
+    carousel.style.transform = `translateX(${translateX}%)`;
+    
+    // Update active dot
+    if (dots) {
+        dots.forEach((dot, index) => {
+            dot.classList.toggle('active', index === imageIndex);
+        });
+    }
+}
+
+function changeImage(sareeId, direction) {
+    const carousel = document.getElementById(`carousel-${sareeId}`);
+    const images = carousel.querySelectorAll('.carousel-image');
+    const currentIndex = sareeImageIndices[sareeId] || 0;
+    
+    let newIndex = currentIndex + direction;
+    if (newIndex < 0) newIndex = images.length - 1;
+    if (newIndex >= images.length) newIndex = 0;
+    
+    showImage(sareeId, newIndex);
+}
+
+// Zoom functionality
+function openZoom(sareeId, imageIndex) {
+    const carousel = document.getElementById(`carousel-${sareeId}`);
+    const images = carousel.querySelectorAll('.carousel-image');
+    
+    // Set up zoom data
+    currentZoomSareeId = sareeId;
+    currentZoomIndex = sareeImageIndices[sareeId] || imageIndex;
+    zoomImages = Array.from(images).map(img => img.src);
+    
+    // Show zoom modal
+    const modal = document.getElementById('zoomModal');
+    const zoomImage = document.getElementById('zoomImage');
+    const zoomCounter = document.getElementById('zoomCounter');
+    
+    zoomImage.src = zoomImages[currentZoomIndex];
+    zoomCounter.textContent = `${currentZoomIndex + 1} / ${zoomImages.length}`;
+    
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden'; // Prevent background scrolling
+}
+
+function closeZoom() {
+    const modal = document.getElementById('zoomModal');
+    modal.classList.remove('active');
+    document.body.style.overflow = 'auto'; // Restore scrolling
+}
+
+function changeZoomImage(direction) {
+    if (zoomImages.length <= 1) return;
+    
+    currentZoomIndex += direction;
+    if (currentZoomIndex < 0) currentZoomIndex = zoomImages.length - 1;
+    if (currentZoomIndex >= zoomImages.length) currentZoomIndex = 0;
+    
+    const zoomImage = document.getElementById('zoomImage');
+    const zoomCounter = document.getElementById('zoomCounter');
+    
+    zoomImage.src = zoomImages[currentZoomIndex];
+    zoomCounter.textContent = `${currentZoomIndex + 1} / ${zoomImages.length}`;
+    
+    // Update the main carousel to match
+    if (currentZoomSareeId) {
+        showImage(currentZoomSareeId, currentZoomIndex);
+    }
+}
+
+// Keyboard navigation for zoom
+document.addEventListener('keydown', function(e) {
+    const modal = document.getElementById('zoomModal');
+    if (modal.classList.contains('active')) {
+        if (e.key === 'Escape') {
+            closeZoom();
+        } else if (e.key === 'ArrowLeft') {
+            changeZoomImage(-1);
+        } else if (e.key === 'ArrowRight') {
+            changeZoomImage(1);
+        }
+    }
+});
+
+// Close zoom when clicking outside the image
+document.getElementById('zoomModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeZoom();
+    }
+});
+
+// Auto-rotate images every 4 seconds (optional feature)
+document.addEventListener('DOMContentLoaded', function() {
+    initializeSareeIndices();
+    
+    const carousels = document.querySelectorAll('.carousel-images');
+    
+    carousels.forEach(carousel => {
+        const sareeId = carousel.id.split('-')[1];
+        const images = carousel.querySelectorAll('.carousel-image');
+        
+        if (images.length > 1) {
+            let autoRotate = setInterval(() => {
+                const currentIndex = sareeImageIndices[sareeId] || 0;
+                const newIndex = (currentIndex + 1) % images.length;
+                showImage(sareeId, newIndex);
+            }, 4000);
+            
+            // Pause auto-rotation on hover
+            carousel.parentElement.parentElement.addEventListener('mouseenter', () => {
+                clearInterval(autoRotate);
+            });
+            
+            // Resume auto-rotation when not hovering
+            carousel.parentElement.parentElement.addEventListener('mouseleave', () => {
+                autoRotate = setInterval(() => {
+                    const currentIndex = sareeImageIndices[sareeId] || 0;
+                    const newIndex = (currentIndex + 1) % images.length;
+                    showImage(sareeId, newIndex);
+                }, 4000);
+            });
+        }
+    });
+});
+</script>
+<script>
+// Enhanced button interactions
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle Add to Cart form submissions
+    const addToCartForms = document.querySelectorAll('.add-to-cart-form');
+    
+    addToCartForms.forEach(form => {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const button = this.querySelector('.cart-button');
+            const icon = button.querySelector('.button-icon');
+            const originalText = button.innerHTML;
+            
+            // Add loading state
+            button.classList.add('button-loading');
+            button.innerHTML = '<span class="button-icon">⏳</span> Adding...';
+            
+            const formData = new FormData(this);
+            
+            fetch(this.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Success state
+                    button.classList.remove('button-loading');
+                    button.classList.add('already-in-cart');
+                    button.innerHTML = '<span class="button-icon">✓</span> In Cart';
+                    button.disabled = true;
+                    
+                    // Update navbar cart count if exists
+                    const cartCount = document.querySelector('.cart-count');
+                    if (cartCount) {
+                        cartCount.textContent = data.cart_total_items;
+                        cartCount.style.display = 'inline-block';
+                    }
+                } else if (data.already_in_cart) {
+                    // Already in cart
+                    button.classList.remove('button-loading');
+                    button.classList.add('already-in-cart');
+                    button.innerHTML = '<span class="button-icon">✓</span> In Cart';
+                    button.disabled = true;
+                } else {
+                    // Error state
+                    button.classList.remove('button-loading');
+                    button.innerHTML = '<span class="button-icon">❌</span> Error';
+                    button.style.background = 'linear-gradient(135deg, #f44336, #d32f2f)';
+                    
+                    setTimeout(() => {
+                        button.innerHTML = originalText;
+                        button.style.background = '';
+                    }, 2000);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                button.classList.remove('button-loading');
+                button.innerHTML = '<span class="button-icon">❌</span> Error';
+                button.style.background = 'linear-gradient(135deg, #f44336, #d32f2f)';
+                
+                setTimeout(() => {
+                    button.innerHTML = originalText;
+                    button.style.background = '';
+                }, 2000);
+            });
+        });
+    });
+
+    // Add click effect to Buy Now buttons
+    const buyButtons = document.querySelectorAll('.buy-button');
+    buyButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            // Create ripple effect
+            const ripple = document.createElement('span');
+            const rect = this.getBoundingClientRect();
+            const size = Math.max(rect.width, rect.height);
+            const x = e.clientX - rect.left - size / 2;
+            const y = e.clientY - rect.top - size / 2;
+            
+            ripple.style.width = ripple.style.height = size + 'px';
+            ripple.style.left = x + 'px';
+            ripple.style.top = y + 'px';
+            ripple.classList.add('ripple');
+            
+            this.appendChild(ripple);
+            
+            setTimeout(() => {
+                ripple.remove();
+            }, 600);
+        });
+    });
+});
+</script>
+
+<style>
+.ripple {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.6);
+    transform: scale(0);
+    animation: ripple 0.6s linear;
+    pointer-events: none;
+}
+
+@keyframes ripple {
+    to {
+        transform: scale(4);
+        opacity: 0;
+    }
+}
+</style>
+
+{% endblock %}
+

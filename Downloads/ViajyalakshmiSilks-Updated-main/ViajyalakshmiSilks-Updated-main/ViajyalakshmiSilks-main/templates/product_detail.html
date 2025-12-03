@@ -1,0 +1,225 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+    .product-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 40px;
+        margin: 50px;
+    }
+
+    .product-images {
+        flex: 1;
+        max-width: 600px;
+        position: relative;
+    }
+
+    .product-images img#mainImage {
+        width: 100%;
+        border-radius: 8px;
+        object-fit: contain;
+        cursor: zoom-in;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .nav-buttons {
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+        margin-top: 10px;
+    }
+
+    .nav-buttons button {
+        background-color: #b10f2e;
+        color: white;
+        border: none;
+        padding: 8px 20px;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+
+    .image-counter {
+        text-align: center;
+        margin-top: 5px;
+        font-weight: bold;
+    }
+
+    .thumbnail-row {
+        margin-top: 20px;
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .thumbnail-row img {
+        height: 60px;
+        cursor: pointer;
+        border: 2px solid transparent;
+        border-radius: 4px;
+    }
+
+    .thumbnail-row img.active {
+        border: 2px solid #b10f2e;
+    }
+
+    .product-info {
+        flex: 1;
+    }
+
+    .product-info h1 {
+        color: #b10f2e;
+        font-size: 2rem;
+        margin-bottom: 10px;
+    }
+
+    .product-info p {
+        font-size: 1.1rem;
+        line-height: 1.6;
+    }
+
+    .price {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #222;
+        margin-top: 20px;
+    }
+
+    .action-buttons {
+        margin-top: 20px;
+    }
+
+    .action-buttons button {
+        background-color: #b10f2e;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        margin-right: 10px;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+
+    /* Zoom Modal */
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 9999;
+        left: 0;
+        top: 0;
+        width: 100vw;
+        height: 100vh;
+        background-color: rgba(0,0,0,0.8);
+        align-items: center;
+        justify-content: center;
+    }
+
+    .modal img {
+        max-width: 90%;
+        max-height: 90%;
+    }
+
+    .modal-close {
+        position: absolute;
+        top: 20px;
+        right: 40px;
+        font-size: 40px;
+        color: white;
+        cursor: pointer;
+    }
+</style>
+
+<div class="product-container">
+    <div class="product-images">
+        <img id="mainImage" src="{{ saree.images.first.image.url }}" onclick="zoomImage(this)" alt="Saree Image" />
+
+        <div class="nav-buttons">
+            <button onclick="prevImage()">‹ Prev</button>
+            <button onclick="nextImage()">Next ›</button>
+        </div>
+        <div class="image-counter" id="imageCounter">1 / {{ saree.images.all.count }}</div>
+
+        <div class="thumbnail-row" id="thumbnails">
+            {% for img in saree.images.all %}
+                <img src="{{ img.image.url }}" onclick="setImage({{ forloop.counter0 }})" />
+            {% endfor %}
+        </div>
+    </div>
+    <div class="product-info">
+        <h1>{{ saree.name }}</h1>
+        <p>{{ saree.description }}</p>
+        <div class="price">₹ {{ saree.price }}</div>
+        <div class="action-buttons">
+            <button>Buy Now</button>
+            <button>Add to Cart</button>
+        </div>
+    </div>
+</div>
+
+<!-- 🔍 Modal Zoom Popup -->
+<div id="zoomModal" class="modal" onclick="closeModal()">
+    <span class="modal-close" onclick="closeModal()">&times;</span>
+    <img id="zoomedImage" src="">
+</div>
+
+<script>
+    const images = [
+        {% for img in saree.images.all %}
+            "{{ img.image.url }}"{% if not forloop.last %},{% endif %}
+        {% endfor %}
+    ];
+    let currentIndex = 0;
+
+    const mainImage = document.getElementById('mainImage');
+    const counter = document.getElementById('imageCounter');
+    const thumbs = document.querySelectorAll('#thumbnails img');
+
+    function updateImage() {
+        mainImage.src = images[currentIndex];
+        counter.innerText = (currentIndex + 1) + " / " + images.length;
+
+        thumbs.forEach((thumb, i) => {
+            thumb.classList.toggle('active', i === currentIndex);
+        });
+    }
+
+    function nextImage() {
+        currentIndex = (currentIndex + 1) % images.length;
+        updateImage();
+    }
+
+    function prevImage() {
+        currentIndex = (currentIndex - 1 + images.length) % images.length;
+        updateImage();
+    }
+
+    function setImage(index) {
+        currentIndex = index;
+        updateImage();
+    }
+
+    function zoomImage(img) {
+        document.getElementById('zoomedImage').src = img.src;
+        document.getElementById('zoomModal').style.display = "flex";
+    }
+
+    function closeModal() {
+        document.getElementById('zoomModal').style.display = "none";
+    }
+
+    // Touch swipe support
+    let startX = 0;
+
+    mainImage.addEventListener('touchstart', (e) => {
+        startX = e.touches[0].clientX;
+    });
+
+    mainImage.addEventListener('touchend', (e) => {
+        let endX = e.changedTouches[0].clientX;
+        if (endX - startX > 50) prevImage();
+        else if (startX - endX > 50) nextImage();
+    });
+
+    window.onload = updateImage;
+</script>
+{% endblock %}
+
