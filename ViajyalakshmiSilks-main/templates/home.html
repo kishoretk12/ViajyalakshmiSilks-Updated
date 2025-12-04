@@ -398,6 +398,45 @@
     </div>
 </section>
 
+<!-- Instagram Floating Button -->
+<div class="instagram-float">
+    <a href="https://www.instagram.com/vijayalakshmi_silks_kpm/" target="_blank" rel="noopener noreferrer">
+        {% load static %}
+        <img src="{% static 'instagram.jpg' %}" alt="Instagram" class="instagram-button-img">
+    </a>
+</div>
+
+<style>
+/* Instagram floating button */
+.instagram-float {
+    position: fixed;
+    bottom: 110px;   /* stays above WhatsApp */
+    right: 20px;
+    z-index: 99999;  /* higher than WhatsApp */
+}
+
+.instagram-button-img {
+    width: 55px;
+    height: 55px;
+    border-radius: 50%;
+    object-fit: cover;
+    box-shadow: 0px 4px 10px rgba(0,0,0,0.25);
+    display: block;
+}
+
+/* Mobile responsive */
+@media (max-width: 480px) {
+    .instagram-float {
+        bottom: 110px;
+        right: 18px;
+    }
+    .instagram-button-img {
+        width: 50px;
+        height: 50px;
+    }
+}
+</style>
+
 <!-- WhatsApp Floating Button -->
 <div class="whatsapp-float">
     <a href="https://wa.me/919791579731?text=Hello! I'm interested in your saree collection" target="_blank" class="whatsapp-button">
