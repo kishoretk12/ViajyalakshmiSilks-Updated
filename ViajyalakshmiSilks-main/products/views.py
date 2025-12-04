@@ -7,6 +7,8 @@ from django.contrib import messages
 from django.db import transaction
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
+from .sms_utils import send_sms
+
 import razorpay
 from .models import Saree, Order, UserProfile, Cart, CartItem, Address
 
@@ -36,55 +38,117 @@ def buy_now(request, product_id):
     # Redirect to address selection first
     return redirect('select_address_buy_now', product_id=product_id)
 
+@login_required
 def payment_complete(request):
-    if request.method == 'POST':
-        payment_id = request.POST.get('razorpay_payment_id')
-        order_id = request.POST.get('razorpay_order_id')
-        signature = request.POST.get('razorpay_signature')
-        
-        orders = Order.objects.filter(razorpay_order_id=order_id)
-        if not orders.exists():
-            return render(request, 'payment_failed.html')
-        
-        params = { 'razorpay_order_id': order_id, 'razorpay_payment_id': payment_id, 'razorpay_signature': signature }
+    if request.method != 'POST':
+        return redirect('shop')
+
+    payment_id = request.POST.get('razorpay_payment_id')
+    order_id = request.POST.get('razorpay_order_id')
+    signature = request.POST.get('razorpay_signature')
+
+    orders = Order.objects.filter(razorpay_order_id=order_id)
+    if not orders.exists():
+        return render(request, 'payment_failed.html')
+
+    params = {
+        'razorpay_order_id': order_id,
+        'razorpay_payment_id': payment_id,
+        'razorpay_signature': signature
+    }
+
+    try:
+        # verify payment signature
+        client.utility.verify_payment_signature(params)
+
+        # mark orders paid
+        for order in orders:
+            order.paid = True
+            order.razorpay_payment_id = payment_id
+            order.razorpay_signature = signature
+            order.save()
+
+        # -------------------------
+        # Notifications: SMS + Email
+        # -------------------------
+        import logging
+        logger = logging.getLogger(__name__)
+
         try:
-            client.utility.verify_payment_signature(params)
-            
-            for order in orders:
-                order.paid = True
-                order.razorpay_payment_id = payment_id
-                order.razorpay_signature = signature
-                order.save()
-            
-            from .email_utils import send_order_notification_to_admin, send_order_confirmation_to_customer
-            
-            try:
-                # Send notification to admin
-                send_order_notification_to_admin(orders)
-                # Send order confirmation to each customer
-                for order in orders:
-                    send_order_confirmation_to_customer(order) 
-                    
-            except Exception as e:
-                # Log email error but don't fail the payment process
-                import logging
-                logger = logging.getLogger(__name__)
-                logger.error(f"Email notification failed: {str(e)}")
-            
-            if request.user.is_authenticated:
+            first_order = orders.first()
+            if first_order and getattr(first_order, 'delivery_address', None):
+                address = first_order.delivery_address
+                product_list = ", ".join([f"{o.saree.name} (x{o.quantity or 1})" for o in orders])
+                total_amount = sum(o.amount for o in orders)
+
+                # Admin phone - set ADMIN_PHONE in settings as +91XXXXXXXXXX
+                admin_phone = getattr(settings, 'ADMIN_PHONE', None) or '+919789157931'
+                admin_message = (
+                    f"NEW ORDER #{first_order.id}\n"
+                    f"Name: {address.full_name}\n"
+                    f"Phone: {address.phone}\n"
+                    f"Addr: {address.address_line_1}"
+                    + (f", {address.address_line_2}" if address.address_line_2 else "") +
+                    f", {address.city}, {address.state} - {address.pincode}\n"
+                    f"Items: {product_list}\n"
+                    f"Amount: Rs.{total_amount}\n"
+                    f"Payment ID: {first_order.razorpay_payment_id or payment_id}\n"
+                    "Please process the order."
+                )
+
                 try:
-                    cart = Cart.objects.get(user=request.user)
-                    cart.items.all().delete()
-                except Cart.DoesNotExist:
-                    pass
-            
-            return render(request, 'thankyou.html', {
-                'orders': orders,
-                'total_amount': sum(order.amount for order in orders)
-            })
-        except:
-            return render(request, 'payment_failed.html')
-    return redirect('shop')
+                    send_sms(admin_phone, admin_message)
+                except Exception as e:
+                    logger.error(f"Failed to send admin SMS: {e}")
+
+                # Send customer SMS per order (you may instead send one combined SMS)
+                for order in orders:
+                    try:
+                        cust_addr = order.delivery_address
+                        if not cust_addr:
+                            continue
+                        customer_phone = cust_addr.phone
+                        customer_message = (
+                            f"Dear {cust_addr.full_name}, your order #{order.id} "
+                            f"for Rs.{order.amount} is confirmed. "
+                            "We will pack & ship soon. Tracking will be sent once dispatched. "
+                            "Thank you - Vijayalakshmi Silks"
+                        )
+                        send_sms(customer_phone, customer_message)
+                    except Exception as e:
+                        logger.error(f"Failed to send customer SMS for order {order.id}: {e}")
+
+            else:
+                logger.warning("Orders exist but first order missing delivery address; skipping SMS.")
+        except Exception as sms_exc:
+            logger.error(f"SMS notification error: {sms_exc}")
+
+        # Email notifications (existing functions)
+        try:
+            from .email_utils import send_order_notification_to_admin, send_order_confirmation_to_customer
+            send_order_notification_to_admin(orders)
+            for order in orders:
+                send_order_confirmation_to_customer(order)
+        except Exception as email_exc:
+            logger.error(f"Email notification failed: {email_exc}")
+
+        # clear cart for logged-in user
+        if request.user.is_authenticated:
+            try:
+                cart = Cart.objects.get(user=request.user)
+                cart.items.all().delete()
+            except Cart.DoesNotExist:
+                pass
+
+        return render(request, 'thankyou.html', {
+            'orders': orders,
+            'total_amount': sum(order.amount for order in orders)
+        })
+
+    except Exception as e:
+        import logging
+        logging.getLogger(__name__).error(f"Payment verification failed: {e}")
+        return render(request, 'payment_failed.html')
 
 @login_required
 def cart_view(request):
