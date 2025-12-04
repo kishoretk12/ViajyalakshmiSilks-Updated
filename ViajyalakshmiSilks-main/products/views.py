@@ -69,68 +69,29 @@ def payment_complete(request):
             order.save()
 
         # -------------------------
-        # Notifications: SMS + Email
+        # Email-only notifications
         # -------------------------
         import logging
         logger = logging.getLogger(__name__)
 
         try:
-            first_order = orders.first()
-            if first_order and getattr(first_order, 'delivery_address', None):
-                address = first_order.delivery_address
-                product_list = ", ".join([f"{o.saree.name} (x{o.quantity or 1})" for o in orders])
-                total_amount = sum(o.amount for o in orders)
-
-                # Admin phone - set ADMIN_PHONE in settings as +91XXXXXXXXXX
-                admin_phone = getattr(settings, 'ADMIN_PHONE', None) or '+919789157931'
-                admin_message = (
-                    f"NEW ORDER #{first_order.id}\n"
-                    f"Name: {address.full_name}\n"
-                    f"Phone: {address.phone}\n"
-                    f"Addr: {address.address_line_1}"
-                    + (f", {address.address_line_2}" if address.address_line_2 else "") +
-                    f", {address.city}, {address.state} - {address.pincode}\n"
-                    f"Items: {product_list}\n"
-                    f"Amount: Rs.{total_amount}\n"
-                    f"Payment ID: {first_order.razorpay_payment_id or payment_id}\n"
-                    "Please process the order."
-                )
-
-                try:
-                    send_sms(admin_phone, admin_message)
-                except Exception as e:
-                    logger.error(f"Failed to send admin SMS: {e}")
-
-                # Send customer SMS per order (you may instead send one combined SMS)
-                for order in orders:
-                    try:
-                        cust_addr = order.delivery_address
-                        if not cust_addr:
-                            continue
-                        customer_phone = cust_addr.phone
-                        customer_message = (
-                            f"Dear {cust_addr.full_name}, your order #{order.id} "
-                            f"for Rs.{order.amount} is confirmed. "
-                            "We will pack & ship soon. Tracking will be sent once dispatched. "
-                            "Thank you - Vijayalakshmi Silks"
-                        )
-                        send_sms(customer_phone, customer_message)
-                    except Exception as e:
-                        logger.error(f"Failed to send customer SMS for order {order.id}: {e}")
-
-            else:
-                logger.warning("Orders exist but first order missing delivery address; skipping SMS.")
-        except Exception as sms_exc:
-            logger.error(f"SMS notification error: {sms_exc}")
-
-        # Email notifications (existing functions)
-        try:
             from .email_utils import send_order_notification_to_admin, send_order_confirmation_to_customer
-            send_order_notification_to_admin(orders)
+
+            # send admin notification (you already have a function)
+            try:
+                send_order_notification_to_admin(orders)
+            except Exception as e:
+                logger.error(f"Failed to send admin email: {e}")
+
+            # send confirmation emails to customers
             for order in orders:
-                send_order_confirmation_to_customer(order)
+                try:
+                    send_order_confirmation_to_customer(order)
+                except Exception as e:
+                    logger.error(f"Failed to send customer email for order {order.id}: {e}")
+
         except Exception as email_exc:
-            logger.error(f"Email notification failed: {email_exc}")
+            logger.error(f"Email notification setup failed: {email_exc}")
 
         # clear cart for logged-in user
         if request.user.is_authenticated:
