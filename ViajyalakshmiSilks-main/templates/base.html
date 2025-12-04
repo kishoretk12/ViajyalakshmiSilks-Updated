@@ -2,22 +2,16 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="utf-8" />
     <title>Vijayalakshmi Silks</title>
-    <link rel="stylesheet" href="{% static 'style.css' %}">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'style.css' %}">
     <style>
         /* Reset default margins and padding */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
-        body {
-            margin: 0;
-            padding: 0;
-        }
-        
+        body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial; }
+
         .navbar {
             background-color: #000;
             color: white;
@@ -30,14 +24,14 @@
             max-width: none !important;
             margin: 0 !important;
         }
-        
+
         .navbar-brand {
             font-weight: bold;
             font-size: 20px;
             color: white;
             text-decoration: none;
         }
-        
+
         .navbar-nav {
             display: flex;
             list-style: none;
@@ -45,7 +39,7 @@
             padding: 0;
             gap: 20px;
         }
-        
+
         .navbar-nav a {
             color: white;
             text-decoration: none;
@@ -53,11 +47,9 @@
             border-radius: 4px;
             transition: background-color 0.3s ease;
         }
-        
-        .navbar-nav a:hover {
-            background-color: rgba(255,255,255,0.1);
-        }
-        
+
+        .navbar-nav a:hover { background-color: rgba(255,255,255,0.1); }
+
         .navbar-toggle {
             display: none;
             background: none;
@@ -67,17 +59,12 @@
             cursor: pointer;
             padding: 4px;
         }
-        
-        .navbar-collapse {
-            display: flex;
-        }
 
-        /* Mobile Styles */
+        .navbar-collapse { display: flex; }
+
+        /* Small screens */
         @media (max-width: 768px) {
-            .navbar-toggle {
-                display: block;
-            }
-            
+            .navbar-toggle { display: block; }
             .navbar-collapse {
                 display: none;
                 position: absolute;
@@ -89,65 +76,80 @@
                 padding: 10px;
                 z-index: 1000;
             }
-            
-            .navbar-collapse.show {
-                display: block;
-            }
-            
-            .navbar-nav {
-                flex-direction: column;
-                gap: 0;
-            }
-            
-            .navbar-nav a {
-                display: block;
-                padding: 12px 16px;
-                border-bottom: 1px solid #333;
-            }
-            
-            .navbar-nav a:last-child {
-                border-bottom: none;
-            }
+            .navbar-collapse.show { display: block; }
+            .navbar-nav { flex-direction: column; gap: 0; }
+            .navbar-nav a { display: block; padding: 12px 16px; border-bottom: 1px solid #333; }
+            .navbar-nav a:last-child { border-bottom: none; }
         }
-        
-                        .cart-count {
-                    background-color: deeppink;
-                    color: white;
-                    border-radius: 10px;
-                    padding: 2px 6px;
-                    font-size: 12px;
-                    font-weight: bold;
-                    margin-left: 4px;
-                }
 
-                /* Smaller mobile devices */
-                @media (max-width: 480px) {
-                    .navbar {
-                        padding: 10px 15px;
-                    }
+        .cart-count {
+            background-color: deeppink;
+            color: white;
+            border-radius: 10px;
+            padding: 2px 6px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-left: 4px;
+        }
 
-                    .navbar-brand {
-                        font-size: 18px;
-                    }
+        @media (max-width: 480px) {
+            .navbar { padding: 10px 15px; }
+            .navbar-brand { font-size: 18px; }
+        }
+
+        /* Floating socials (site-wide) */
+        .floating-socials {
+          position: fixed;
+          right: 18px;
+          bottom: 18px;
+          z-index: 99999;
+          display: flex;
+          flex-direction: column;
+          gap: 14px;
+          align-items: center;
+          pointer-events: auto;
+        }
+
+        .floating-socials a {
+          display: block;
+          width: 60px;
+          height: 60px;
+          border-radius: 50%;
+          overflow: hidden;
+          background: #fff;
+          box-shadow: 0 8px 20px rgba(0,0,0,0.16);
+          transition: transform .15s ease, box-shadow .15s ease;
+        }
+
+        .floating-socials a img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          display: block;
+        }
+
+        .floating-socials a:hover { transform: translateY(-4px); box-shadow: 0 14px 30px rgba(0,0,0,0.2); }
+
+        @media (max-width: 480px) {
+          .floating-socials { right: 14px; bottom: 14px; gap: 10px; }
+          .floating-socials a { width: 52px; height: 52px; }
         }
     </style>
 </head>
 <body>
     <header class="navbar">
         <a href="/" class="navbar-brand">Vijayalakshmi Silks</a>
-        
-        <button class="navbar-toggle" onclick="toggleNavbar()">
-            ☰
-        </button>
-        
+
+        <button class="navbar-toggle" onclick="toggleNavbar()">☰</button>
+
         <nav class="navbar-collapse" id="navbar-collapse">
             <div class="navbar-nav">
                 <a href="/">Home</a>
                 <a href="/shop/">Shop</a>
                 <a href="/cart/">Cart
-                {% if user.is_authenticated and cart_total_items > 0 %}
-                    <span class="cart-count" id="cart-count">({{ cart_total_items }})</span>
-                {% endif %}
+                    {% if user.is_authenticated and cart_total_items > 0 %}
+                        <span class="cart-count" id="cart-count">({{ cart_total_items }})</span>
+                    {% endif %}
                 </a>
                 {% if user.is_authenticated %}
                     <a href="/profile/">{{ user.get_full_name|default:user.username }}</a>
@@ -158,8 +160,8 @@
                     <a href="/signup/">Sign Up</a>
                 {% endif %}
                 <a href="/admin/">Admin</a>
-        </div>
-    </nav>
+            </div>
+        </nav>
     </header>
 
     <script>
@@ -167,44 +169,40 @@
             const navbar = document.getElementById('navbar-collapse');
             navbar.classList.toggle('show');
         }
-        
         // Close navbar when clicking outside or on a link
         document.addEventListener('click', function(event) {
             const navbar = document.getElementById('navbar-collapse');
             const toggleBtn = document.querySelector('.navbar-toggle');
-            
-            if (!navbar.contains(event.target) && !toggleBtn.contains(event.target)) {
+            if (!navbar.contains(event.target) && toggleBtn && !toggleBtn.contains(event.target)) {
                 navbar.classList.remove('show');
             }
         });
-        
-        // Close navbar when clicking on a nav link (mobile)
-        document.querySelectorAll('.navbar-nav a').forEach(link => {
-            link.addEventListener('click', function() {
-                if (window.innerWidth <= 768) {
-                    document.getElementById('navbar-collapse').classList.remove('show');
-                }
+        // Close on nav link click (mobile)
+        document.addEventListener('DOMContentLoaded', function(){
+            document.querySelectorAll('.navbar-nav a').forEach(link => {
+                link.addEventListener('click', function() {
+                    if (window.innerWidth <= 768) document.getElementById('navbar-collapse').classList.remove('show');
+                });
             });
         });
     </script>
+
     <main style="margin: 0; padding: 0; width: 100%;">{% block content %}{% endblock %}</main>
+
     <footer style="background-color: #f0f0f0; padding: 20px; text-align: center; margin: 0; width: 100%;">
         © 2025 Vijayalakshmi Silks
     </footer>
-    <!-- Instagram Floating Button -->
-<div style="
-    position: fixed;
-    bottom: 110px;
-    right: 20px;
-    z-index: 999;
-">
-    <a href="https://www.instagram.com/vijayalakshmi_silks_kpm/" target="_blank">
-        <img src="{% static 'instagram.jpg' %}" 
-             alt="Instagram"
-             style="width:55px; height:55px; border-radius:50%; object-fit:cover;">
-    </a>
-</div>
+
+    <!-- Floating social buttons (Instagram above WhatsApp) -->
+    <div class="floating-socials" aria-hidden="false">
+      <a class="floating-instagram" href="https://www.instagram.com/vijayalakshmi_silks_kpm/" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+        <img src="{% static 'instagram.jpg' %}" alt="Instagram">
+      </a>
+
+      <a class="floating-whatsapp" href="https://wa.me/919791579731?text=Hello!%20I'm%20interested%20in%20your%20saree%20collection" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp">
+        <img src="{% static 'whatsapp-icon.png' %}" alt="WhatsApp">
+      </a>
+    </div>
 
 </body>
 </html>
-
