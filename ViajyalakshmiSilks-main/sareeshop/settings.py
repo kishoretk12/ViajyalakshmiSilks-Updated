@@ -1,16 +1,17 @@
+# settings.py
 import os
 from pathlib import Path
 from dotenv import load_dotenv
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Load .env
+# Load .env from project root (silent if missing)
 load_dotenv(BASE_DIR / ".env")
 
 # SECURITY
-SECRET_KEY = os.getenv("SECRET_KEY", "django-insecure-key")
-DEBUG = os.getenv("DEBUG", "False").lower() == "true"
-ALLOWED_HOSTS = ["*"]
+SECRET_KEY = os.getenv("SECRET_KEY", "django-insecure-change-me")
+DEBUG = os.getenv("DEBUG", "False").lower() in ("1", "true", "yes")
+ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "*").split(",")
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -53,7 +54,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'sareeshop.wsgi.application'
 
-# DB
+# DATABASE (keep sqlite for now)
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -61,7 +62,7 @@ DATABASES = {
     }
 }
 
-# TIMEZONE
+# TIME / I18N
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'Asia/Kolkata'
 USE_I18N = True
@@ -75,29 +76,32 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-# Razorpay (from .env)
-RAZORPAY_KEY_ID = os.getenv("RAZORPAY_KEY_ID")
-RAZORPAY_KEY_SECRET = os.getenv("RAZORPAY_KEY_SECRET")
+# ===== External credentials read from .env (required for payments & SMS) =====
+RAZORPAY_KEY_ID = os.getenv("RAZORPAY_KEY_ID") or ""
+RAZORPAY_KEY_SECRET = os.getenv("RAZORPAY_KEY_SECRET") or ""
 
-# Twilio (from .env)
-TWILIO_ACCOUNT_SID = os.getenv("TWILIO_ACCOUNT_SID")
-TWILIO_AUTH_TOKEN = os.getenv("TWILIO_AUTH_TOKEN")
-TWILIO_PHONE_NUMBER = os.getenv("TWILIO_PHONE_NUMBER")
+TWILIO_ACCOUNT_SID = os.getenv("TWILIO_ACCOUNT_SID") or ""
+TWILIO_AUTH_TOKEN = os.getenv("TWILIO_AUTH_TOKEN") or ""
+TWILIO_PHONE_NUMBER = os.getenv("TWILIO_PHONE_NUMBER") or ""
 
-ADMIN_PHONE = os.getenv("ADMIN_PHONE")
+# Admin phone used by your SMS code
+ADMIN_PHONE = os.getenv("ADMIN_PHONE") or os.getenv("ADMIN_PHONE_NUMBER") or ""
 
-# Authentication
+# ===== Auth & Email =====
 LOGIN_URL = '/login/'
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
 
-# Email (Gmail)
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
-EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
+EMAIL_HOST = os.getenv("EMAIL_HOST", "smtp.gmail.com")
+EMAIL_PORT = int(os.getenv("EMAIL_PORT", 587))
+EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS", "True").lower() in ("1", "true", "yes")
+EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER") or ""
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD") or ""
 DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", EMAIL_HOST_USER)
-
 ADMIN_EMAIL = os.getenv("ADMIN_EMAIL", EMAIL_HOST_USER)
+
+# Security reminders (not required but good to have)
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SESSION_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_SECURE = not DEBUG
