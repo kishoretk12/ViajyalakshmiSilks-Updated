@@ -1,7 +1,11 @@
 import os
 from pathlib import Path
+from dotenv import load_dotenv
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# load .env (only used for Twilio / any env vars you put there)
+load_dotenv(BASE_DIR / ".env")
 
 SECRET_KEY = 'django-insecure-key'
 DEBUG = True
@@ -62,6 +66,7 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
+# Razorpay (kept in settings as you requested)
 RAZORPAY_KEY_ID = "rzp_live_7nFW0TaEJ03VGZ"
 RAZORPAY_KEY_SECRET = "QHtzHfWHWQB56SDnUwgkZZlE"
 
@@ -81,11 +86,13 @@ DEFAULT_FROM_EMAIL = 'kishore.kumar0728@gmail.com'  # Replace with your Gmail
 # Admin Email for notifications
 ADMIN_EMAIL = 'kishore.kumar0728@gmail.com'  # Replace with admin email
 
-# EMAIL_HOST_USER = 'kishore.kumar0728@gmail.com'  # Replace with your Gmail
-# EMAIL_HOST_PASSWORD = 'ixtb jmws rxah sybe'  # Replace with Gmail App Password
-# DEFAULT_FROM_EMAIL = 'kishore.kumar0728@gmail.com'  # Replace with your Gmail
-# # Admin Email for notifications
-# ADMIN_EMAIL = 'vijayalakshmisilks96@gmail.com'  # Replace with admin email
+# Twilio - read from .env (you said you'll use .env only for Twilio)
+TWILIO_ACCOUNT_SID = os.getenv("TWILIO_ACCOUNT_SID", "")
+TWILIO_AUTH_TOKEN = os.getenv("TWILIO_AUTH_TOKEN", "")
+TWILIO_PHONE_NUMBER = os.getenv("TWILIO_PHONE_NUMBER", "")
+
+# Admin phone for SMS notifications (fallback if not in .env)
+ADMIN_PHONE = os.getenv("ADMIN_PHONE", "+919791579731")
 
 # Setup Gmail App Password:
 # Enable 2-Factor Authentication on your Gmail account
