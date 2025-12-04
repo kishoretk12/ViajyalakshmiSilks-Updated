@@ -87,6 +87,12 @@ ADMIN_EMAIL = 'kishore.kumar0728@gmail.com'  # Replace with admin email
 # # Admin Email for notifications
 # ADMIN_EMAIL = 'vijayalakshmisilks96@gmail.com'  # Replace with admin email
 
+TWILIO_ACCOUNT_SID = "AC942785d49b5b5f843b5dc62a15eceadc"
+TWILIO_AUTH_TOKEN = "0f7796c4fc7c983e77ca52c731631c92"
+TWILIO_PHONE_NUMBER = "+13203226780"  # Your Twilio number
+ADMIN_PHONE_NUMBER = "+919791579731"  # Your number
+
+
 # Setup Gmail App Password:
 # Enable 2-Factor Authentication on your Gmail account
 # Go to: https://myaccount.google.com/apppasswords
