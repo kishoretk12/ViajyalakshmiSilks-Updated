@@ -1,42 +1,44 @@
 # products/sms_utils.py
-import time
 import logging
-from typing import Optional
 from twilio.rest import Client
 from django.conf import settings
 
 logger = logging.getLogger(__name__)
 
-def send_sms(to_phone: str, message: str, retries: int = 3, backoff: float = 1.0) -> bool:
+def _twilio_client():
+    """Return a Twilio client or raise ValueError if creds missing."""
+    sid = getattr(settings, "TWILIO_ACCOUNT_SID", None)
+    token = getattr(settings, "TWILIO_AUTH_TOKEN", None)
+    if not sid or not token:
+        raise ValueError("Twilio credentials not configured in settings.")
+    return Client(sid, token)
+
+def send_sms(to_phone: str, message: str, from_phone: str = None) -> bool:
     """
-    Send SMS via Twilio. Retries a few times on failure.
-    Returns True if sent (Twilio accepted), False otherwise.
+    Send SMS using Twilio.
+    Returns True on success, False on failure (logged).
     """
-    if not all([settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN, settings.TWILIO_PHONE_NUMBER]):
-        logger.error("Twilio credentials missing in settings; SMS not sent.")
+    try:
+        client = _twilio_client()
+        from_number = from_phone or getattr(settings, "TWILIO_PHONE_NUMBER", None)
+        if not from_number:
+            raise ValueError("TWILIO_PHONE_NUMBER not configured in settings.")
+
+        # Ensure phone numbers are strings
+        to_phone = str(to_phone)
+        from_number = str(from_number)
+
+        msg = client.messages.create(
+            body=message,
+            from_=from_number,
+            to=to_phone
+        )
+        logger.info("Sent SMS to %s (sid=%s)", to_phone, getattr(msg, 'sid', 'n/a'))
+        return True
+    except ValueError as ve:
+        logger.error("SMS config error: %s", ve)
         return False
-
-    # Normalize phone (Twilio needs full +<country> format)
-    to_phone = to_phone.strip()
-    if not to_phone.startswith("+"):
-        logger.warning("send_sms: phone does not start with '+': %s", to_phone)
-
-    client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
-
-    attempt = 0
-    while attempt < retries:
-        try:
-            attempt += 1
-            msg = client.messages.create(
-                body=message,
-                from_=settings.TWILIO_PHONE_NUMBER,
-                to=to_phone
-            )
-            logger.info("SMS sent (sid=%s) to %s", getattr(msg, 'sid', '<no-sid>'), to_phone)
-            return True
-        except Exception as e:
-            logger.error("Twilio SMS attempt %d/%d failed for %s: %s", attempt, retries, to_phone, e)
-            if attempt >= retries:
-                break
-            time.sleep(backoff * attempt)
-    return False
+    except Exception as e:
+        # Twilio errors typically include HTTP status and message
+        logger.exception("Failed to send SMS to %s: %s", to_phone, e)
+        return False
