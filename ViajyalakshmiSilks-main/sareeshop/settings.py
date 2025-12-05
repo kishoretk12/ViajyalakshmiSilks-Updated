@@ -90,6 +90,7 @@ ADMIN_EMAIL = 'kishore.kumar0728@gmail.com'  # Replace with admin email
 TWILIO_ACCOUNT_SID = os.getenv("TWILIO_ACCOUNT_SID", "")
 TWILIO_AUTH_TOKEN = os.getenv("TWILIO_AUTH_TOKEN", "")
 TWILIO_PHONE_NUMBER = os.getenv("TWILIO_PHONE_NUMBER", "")
+ENABLE_SMS = os.getenv("ENABLE_SMS", "False") == "True"
 
 # Admin phone for SMS notifications (fallback if not in .env)
 ADMIN_PHONE = os.getenv("ADMIN_PHONE", "+919791579731")
