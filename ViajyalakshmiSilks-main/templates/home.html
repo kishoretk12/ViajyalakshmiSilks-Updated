@@ -197,25 +197,4 @@
         <a href="/shop/" class="cta-button">Start Shopping</a>
     </div>
 </section>
-
-<!-- Saree Collection: placed INSIDE the block to avoid TemplateSyntaxError -->
-<section class="container" style="padding:60px 20px;">
-    <h2 class="section-title">Our Latest Sarees</h2>
-    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(250px,1fr)); gap:30px;">
-
-        {% for p in products %}
-        <a href="{% url 'saree_detail' p.id %}" style="text-decoration:none;">
-            <div style="border:1px solid #ddd; border-radius:10px; padding:10px; background:white;">
-                <img src="{{ p.image.url }}" style="width:100%; height:320px; object-fit:cover; border-radius:10px;">
-                <h3 style="margin-top:10px; color:#333; text-align:center;">{{ p.name }}</h3>
-                <p style="color:green; text-align:center; font-weight:bold;">₹{{ p.price }}</p>
-            </div>
-        </a>
-        {% empty %}
-        <p style="text-align:center; color:#666;">No products available right now.</p>
-        {% endfor %}
-
-    </div>
-</section>
-
 {% endblock %}
