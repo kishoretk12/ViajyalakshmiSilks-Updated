@@ -11,77 +11,21 @@ from django.db import transaction
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 
+# SMS util (optional, controlled by settings.ENABLE_SMS)
+try:
+    from .sms_utils import send_sms
+except Exception:
+    # If sms_utils missing, define a stub to avoid import errors
+    def send_sms(to_phone, message, from_phone=None):
+        logging.getLogger(__name__).warning("send_sms not available; SMS skipped.")
+        return False
+
 import razorpay
 from .models import Saree, Order, UserProfile, Cart, CartItem, Address
 
 logger = logging.getLogger(__name__)
 
-# ------------------------
-# Try to import external utils; otherwise provide safe fallbacks
-# ------------------------
-try:
-    from .sms_utils import send_sms as send_sms_util
-except Exception:
-    send_sms_util = None
-    logger.warning("products.sms_utils not found; SMS calls will use fallback or be skipped.")
-
-try:
-    from .email_utils import send_order_notification_to_admin as EMAIL_notify_admin, \
-                             send_order_confirmation_to_customer as EMAIL_notify_customer
-except Exception:
-    EMAIL_notify_admin = None
-    EMAIL_notify_customer = None
-    logger.warning("products.email_utils not found; using inline fallback email senders.")
-
-
-def _send_sms(to_phone: str, message: str) -> bool:
-    """Unified SMS send wrapper. Returns True on success, False otherwise."""
-    try:
-        if not getattr(settings, "ENABLE_SMS", False):
-            logger.debug("ENABLE_SMS is False; skipping SMS to %s", to_phone)
-            return False
-
-        # Use provided sms_utils if available
-        if send_sms_util:
-            resp = send_sms_util(to_phone, message)
-            # send_sms_util may return Twilio dict/object or True/False
-            if isinstance(resp, dict) or getattr(resp, 'sid', None):
-                return True
-            return bool(resp)
-
-        # Fallback: try Twilio directly (in-case sms_utils missing)
-        sid = getattr(settings, "TWILIO_ACCOUNT_SID", None)
-        token = getattr(settings, "TWILIO_AUTH_TOKEN", None)
-        from_num = getattr(settings, "TWILIO_PHONE_NUMBER", None)
-        if not (sid and token and from_num):
-            logger.error("Twilio creds not configured properly; cannot send SMS.")
-            return False
-
-        from twilio.rest import Client
-        client = Client(sid, token)
-        msg = client.messages.create(body=message, from_=from_num, to=to_phone)
-        logger.info("SMS sent via fallback Twilio to %s, sid=%s", to_phone, getattr(msg, 'sid', None))
-        return True
-    except Exception as e:
-        logger.exception("SMS send failed to %s: %s", to_phone, e)
-        return False
-
-
-def _send_email(subject: str, body: str, to_list: list) -> bool:
-    """Wrapper to send email via Django send_mail. Returns True on success."""
-    try:
-        if not to_list:
-            logger.warning("No recipients provided for email: %s", subject)
-            return False
-        send_mail(subject, body, settings.DEFAULT_FROM_EMAIL, to_list)
-        logger.info("Email sent: %s -> %s", subject, to_list)
-        return True
-    except Exception as e:
-        logger.exception("Failed to send email '%s' to %s: %s", subject, to_list, e)
-        return False
-
-
-# Razorpay client - uses keys from settings (you keep them directly in settings.py)
+# Razorpay client (safe: read from settings, may be blank in dev)
 client = razorpay.Client(auth=(getattr(settings, 'RAZORPAY_KEY_ID', None),
                                getattr(settings, 'RAZORPAY_KEY_SECRET', None)))
 
@@ -109,14 +53,13 @@ def shop_view(request):
 
 @login_required
 def buy_now(request, product_id):
+    # Redirect to address selection first
     return redirect('select_address_buy_now', product_id=product_id)
 
 
 @login_required
 def payment_complete(request):
-    """
-    Full payment verification, detailed email + SMS for admin & customers.
-    """
+    """Handle Razorpay payment verification, mark orders paid, send notifications."""
     if request.method != 'POST':
         return redirect('shop')
 
@@ -126,7 +69,6 @@ def payment_complete(request):
 
     orders = Order.objects.filter(razorpay_order_id=order_id)
     if not orders.exists():
-        logger.warning("payment_complete called with unknown razorpay_order_id=%s", order_id)
         return render(request, 'payment_failed.html')
 
     params = {
@@ -136,210 +78,175 @@ def payment_complete(request):
     }
 
     try:
-        # verify signature (raises if invalid)
+        # verify payment signature
         client.utility.verify_payment_signature(params)
-    except Exception as e:
-        logger.exception("Razorpay signature verification failed: %s", e)
-        return render(request, 'payment_failed.html')
 
-    # mark orders paid & store payment ids
-    for o in orders:
-        o.paid = True
-        o.razorpay_payment_id = payment_id
-        o.razorpay_signature = signature
-        o.save()
+        # mark orders paid
+        for order in orders:
+            order.paid = True
+            order.razorpay_payment_id = payment_id
+            order.razorpay_signature = signature
+            order.save()
 
-    # Try to fetch payment details from Razorpay for richer receipts (non-fatal)
-    payment_info = None
-    try:
-        if payment_id:
-            payment_info = client.payment.fetch(payment_id)
-    except Exception as e:
-        logger.warning("Could not fetch Razorpay payment details for payment_id=%s: %s", payment_id, e)
+        # Try fetch payment details from Razorpay (used for receipt)
         payment_info = None
-
-    # --- Prepare shared details ---
-    def _format_order_line(o):
-        qty = getattr(o, 'quantity', 1) or 1
-        name = o.saree.name if getattr(o, 'saree', None) else "Item"
-        return f"{name} (x{qty}) - Rs.{o.amount}"
-
-    order_lines = [ _format_order_line(o) for o in orders ]
-    total_amount = sum(o.amount for o in orders)
-    order_ids = ", ".join(str(o.id) for o in orders)
-    payment_display = payment_id or orders.first().razorpay_payment_id or "N/A"
-
-    # -------------------------
-    # SEND ADMIN EMAIL (DETAILED)
-    # -------------------------
-    try:
-        admin_email = getattr(settings, 'ADMIN_EMAIL', None)
-        if admin_email:
-            first = orders.first()
-            addr = getattr(first, 'delivery_address', None)
-            admin_subject = f"[Vijayalakshmi Silks] New Order(s) #{order_ids}"
-            admin_body_lines = [
-                f"New order(s) received: {order_ids}",
-                "",
-                "Customer details:",
-            ]
-            if addr:
-                admin_body_lines += [
-                    f"Name: {addr.full_name}",
-                    f"Phone: {addr.phone}",
-                    f"Address: {addr.address_line_1}" + (f", {addr.address_line_2}" if addr.address_line_2 else ""),
-                    f"{addr.city}, {addr.state} - {addr.pincode}",
-                    ""
-                ]
-            else:
-                admin_body_lines.append(f"User: {first.user.get_full_name() or first.user.username} (no address object)")
-
-            admin_body_lines += [
-                "Items:",
-                *order_lines,
-                "",
-                f"Total amount: Rs.{total_amount}",
-                f"Payment ID: {payment_display}",
-                "",
-                f"Admin panel: {getattr(settings, 'SITE_URL', 'http://example.com')}/admin/",
-                "",
-                "Please process this order from the admin dashboard.",
-                "",
-                "Regards,",
-                "Vijayalakshmi Silks"
-            ]
-            _send_email(admin_subject, "\n".join(admin_body_lines), [admin_email])
-        else:
-            logger.warning("ADMIN_EMAIL not set; skipping admin email.")
-    except Exception as e:
-        logger.exception("Failed to send admin email: %s", e)
-
-    # If you have custom email function, call it (best-effort)
-    try:
-        if EMAIL_notify_admin:
-            try:
-                EMAIL_notify_admin(orders)
-            except Exception as e:
-                logger.exception("Custom EMAIL_notify_admin failed: %s", e)
-    except Exception:
-        pass
-
-    # -------------------------
-    # SEND CUSTOMER EMAILS (DETAILED RECEIPT)
-    # -------------------------
-    for o in orders:
         try:
-            user_email = o.user.email if o.user and getattr(o.user, 'email', None) else None
-            if not user_email:
-                logger.warning("Order %s has no user email; skipping customer email.", o.id)
-            else:
-                cust_subject = f"Order Confirmation & Receipt - Order #{o.id}"
-                addr = getattr(o, 'delivery_address', None)
-                cust_lines = [
-                    f"Hello {addr.full_name if addr else (o.user.get_full_name() or o.user.username)},",
-                    "",
-                    f"Thank you for your order #{o.id}. Here are the details:",
-                    "",
-                    f"Item: {o.saree.name if getattr(o,'saree',None) else 'Item'}",
-                    f"Quantity: {o.quantity or 1}",
-                    f"Amount: Rs.{o.amount}",
-                    "",
-                    f"Payment ID: {payment_display}",
-                ]
-                if payment_info:
-                    # include some payment_info fields safely
-                    try:
-                        amount_paid = int(payment_info.get('amount', 0)) / 100 if payment_info.get('amount') else o.amount
-                        method = payment_info.get('method', 'N/A')
-                        status = payment_info.get('status', 'N/A')
-                        cust_lines += [
-                            f"Payment details: Amount: Rs.{amount_paid}, Method: {method}, Status: {status}"
-                        ]
-                    except Exception:
-                        pass
-
-                if addr:
-                    cust_lines += [
-                        "",
-                        "Delivery Address:",
-                        f"{addr.full_name}",
-                        f"{addr.address_line_1}" + (f", {addr.address_line_2}" if addr.address_line_2 else ""),
-                        f"{addr.city}, {addr.state} - {addr.pincode}",
-                    ]
-
-                cust_lines += [
-                    "",
-                    "We will pack & ship soon. Tracking details will be emailed/smsed once dispatched.",
-                    "",
-                    f"For queries reply to {settings.DEFAULT_FROM_EMAIL}",
-                    "",
-                    "Regards,",
-                    "Vijayalakshmi Silks"
-                ]
-                _send_email(cust_subject, "\n".join(cust_lines), [user_email])
-
-            # If you have a custom per-order email function, call it too
-            if EMAIL_notify_customer:
-                try:
-                    EMAIL_notify_customer(o)
-                except Exception as e:
-                    logger.exception("Custom EMAIL_notify_customer failed for %s: %s", o.id, e)
-
+            if payment_id:
+                payment_info = client.payment.fetch(payment_id)
         except Exception as e:
-            logger.exception("Customer email error for order %s: %s", o.id, e)
+            # Don't fail overall flow if fetch fails
+            logger.warning("Could not fetch Razorpay payment details: %s", e)
+            payment_info = None
 
-    # -------------------------
-    # OPTIONAL: SEND SMSes (Admin + Customer) - concise
-    # -------------------------
-    try:
-        if getattr(settings, "ENABLE_SMS", False):
-            # Admin SMS (concise)
-            try:
-                first = orders.first()
-                addr = getattr(first, 'delivery_address', None)
-                admin_phone = getattr(settings, 'ADMIN_PHONE', None)
-                if admin_phone:
-                    admin_sms = (
-                        f"NEW ORDER #{first.id} | {addr.full_name if addr else first.user.username} | "
-                        f"{addr.phone if addr else 'N/A'} | Items: {len(order_lines)} | Rs.{total_amount}"
-                    )
-                    _send_sms(admin_phone, admin_sms)
-            except Exception as e:
-                logger.exception("Admin SMS failed: %s", e)
-
-            # Customer SMS(s) - short receipt
-            for o in orders:
-                try:
-                    ca = getattr(o, 'delivery_address', None)
-                    phone = getattr(ca, 'phone', None) or (o.user and getattr(o.user, 'profile', None) and getattr(o.user.profile, 'mobile_number', None))
-                    if not phone:
-                        # no phone available on order delivery address
-                        logger.debug("Order %s - no customer phone available; skipping SMS", o.id)
-                        continue
-                    cust_sms = (
-                        f"Dear {ca.full_name if ca else (o.user.get_full_name() or o.user.username)}, your order #{o.id} for Rs.{o.amount} is confirmed. "
-                        f"Payment ID:{payment_display}. - Vijayalakshmi Silks"
-                    )
-                    _send_sms(phone, cust_sms)
-                except Exception as e:
-                    logger.exception("Customer SMS failed for order %s: %s", o.id, e)
-    except Exception as e:
-        logger.exception("SMS section failed globally: %s", e)
-
-    # -------------------------
-    # Clear cart for logged-in user
-    # -------------------------
-    if request.user.is_authenticated:
+        # Attempt to import your email helpers (optional)
         try:
-            cart = Cart.objects.get(user=request.user)
-            cart.items.all().delete()
-        except Cart.DoesNotExist:
-            pass
+            from .email_utils import send_order_notification_to_admin, send_customer_receipt, send_admin_order_email
+        except Exception as e:
+            logger.warning("Custom email utilities not present or failed to import: %s", e)
+            send_order_notification_to_admin = None
+            send_customer_receipt = None
+            send_admin_order_email = None
 
-    return render(request, 'thankyou.html', {
-        'orders': orders,
-        'total_amount': total_amount
-    })
+        # Send admin notification via your function (if exists), else fallback to send_mail
+        try:
+            if callable(send_admin_order_email):
+                try:
+                    send_admin_order_email(orders)
+                except Exception as e:
+                    logger.error("send_admin_order_email failed: %s", e)
+            else:
+                # fallback: send a simple admin email
+                first_order = orders.first()
+                if first_order and getattr(first_order, 'delivery_address', None):
+                    addr = first_order.delivery_address
+                    product_list = ", ".join([f"{o.saree.name} (x{o.quantity or 1})" for o in orders])
+                    total_amount = sum(o.amount for o in orders)
+                    admin_subject = f"NEW ORDER #{first_order.id}"
+                    admin_body = (
+                        f"Name: {addr.full_name}\n"
+                        f"Phone: {addr.phone}\n"
+                        f"Address: {addr.address_line_1}"
+                        + (f", {addr.address_line_2}" if addr.address_line_2 else "") +
+                        f", {addr.city}, {addr.state} - {addr.pincode}\n\n"
+                        f"Items: {product_list}\nAmount: Rs.{total_amount}\n"
+                        f"Payment ID: {payment_id or 'N/A'}\n"
+                    )
+                    admin_email = getattr(settings, 'ADMIN_EMAIL', None)
+                    if admin_email:
+                        try:
+                            send_mail(admin_subject, admin_body, settings.DEFAULT_FROM_EMAIL, [admin_email])
+                        except Exception as e:
+                            logger.error("Failed to send fallback admin email: %s", e)
+        except Exception as e:
+            logger.error("Admin notification error: %s", e)
+
+        # Send confirmation emails to customers
+        for order in orders:
+            try:
+                # Use your custom email function if present
+                if callable(send_customer_receipt):
+                    try:
+                        # If you have payment_info, pass a dict; else pass minimal info
+                        info = payment_info or {'id': payment_id or order.razorpay_payment_id or 'N/A',
+                                                'method': payment_info.get('method') if payment_info else 'N/A',
+                                                'status': payment_info.get('status') if payment_info else 'success',
+                                                'amount': payment_info.get('amount') if payment_info else order.amount}
+                        send_customer_receipt(order, info)
+                    except Exception as e:
+                        logger.error("send_customer_receipt failed for order %s: %s", order.id, e)
+
+                # Additionally send a short payment receipt email (direct) to customer email (fallback)
+                customer_email = None
+                if order.user and getattr(order.user, 'email', None):
+                    customer_email = order.user.email
+
+                if customer_email:
+                    try:
+                        subject = f"Payment Receipt for Order #{order.id}"
+                        body_lines = [
+                            f"Hello {order.delivery_address.full_name if order.delivery_address else order.user.get_full_name() or order.user.username},",
+                            "",
+                            f"Thank you for your order #{order.id}. Below are your payment details:",
+                            f"Payment ID: {payment_id or order.razorpay_payment_id or 'N/A'}",
+                        ]
+                        if payment_info:
+                            amt = int(payment_info.get('amount', 0)) / 100 if payment_info.get('amount') else order.amount
+                            body_lines += [
+                                f"Amount (INR): {amt}",
+                                f"Method: {payment_info.get('method', 'N/A')}",
+                                f"Status: {payment_info.get('status', 'N/A')}",
+                            ]
+                        else:
+                            body_lines += [f"Amount (INR): {order.amount}"]
+
+                        body_lines += [
+                            "",
+                            "This is an automated receipt from Vijayalakshmi Silks.",
+                            "If you have any questions reply to this email."
+                        ]
+                        body = "\n".join(body_lines)
+                        send_mail(subject, body, settings.DEFAULT_FROM_EMAIL, [customer_email])
+                    except Exception as e:
+                        logger.error("Failed to send direct payment receipt email for order %s: %s", order.id, e)
+            except Exception as e:
+                logger.error("Customer email error for order %s: %s", order.id, e)
+
+        # -------------------------
+        # Optional SMS notifications (controlled by settings.ENABLE_SMS)
+        # -------------------------
+        try:
+            if getattr(settings, "ENABLE_SMS", False):
+                # Admin SMS
+                first_order = orders.first()
+                if first_order and getattr(first_order, 'delivery_address', None):
+                    addr = first_order.delivery_address
+                    product_list = ", ".join([f"{o.saree.name} (x{o.quantity or 1})" for o in orders])
+                    total_amount = sum(o.amount for o in orders)
+                    admin_phone = getattr(settings, "ADMIN_PHONE", None) or getattr(settings, "ADMIN_PHONE_NUMBER", None)
+                    admin_msg = (
+                        f"NEW ORDER #{first_order.id}\n"
+                        f"{addr.full_name}, {addr.phone}\n"
+                        f"{addr.address_line_1}{', ' + addr.address_line_2 if addr.address_line_2 else ''}, "
+                        f"{addr.city} - {addr.pincode}\nItems: {product_list}\nAmount: Rs.{total_amount}"
+                    )
+                    try:
+                        if admin_phone:
+                            send_sms(admin_phone, admin_msg)
+                    except Exception as e:
+                        logger.error("Admin SMS send failed: %s", e)
+
+                # Customer SMS(s)
+                for order in orders:
+                    try:
+                        ca = order.delivery_address
+                        if not ca or not getattr(ca, 'phone', None):
+                            continue
+                        cust_msg = (
+                            f"Hi {ca.full_name}, your order #{order.id} for Rs.{order.amount} is confirmed. "
+                            "We will send tracking details once dispatched. - Vijayalakshmi Silks"
+                        )
+                        send_sms(ca.phone, cust_msg)
+                    except Exception as e:
+                        logger.error("Customer SMS failed for order %s: %s", order.id, e)
+        except Exception as e:
+            logger.error("SMS notification section failed: %s", e)
+
+        # clear cart for logged-in user
+        if request.user.is_authenticated:
+            try:
+                cart = Cart.objects.get(user=request.user)
+                cart.items.all().delete()
+            except Cart.DoesNotExist:
+                pass
+
+        return render(request, 'thankyou.html', {
+            'orders': orders,
+            'total_amount': sum(order.amount for order in orders)
+        })
+
+    except Exception as e:
+        logger.exception("Payment verification failed: %s", e)
+        return render(request, 'payment_failed.html')
 
 
 @login_required
@@ -368,6 +275,7 @@ def add_to_cart(request, product_id):
         defaults={'quantity': 1}
     )
 
+    # If item already exists, return appropriate message
     if not created:
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
             return JsonResponse({
@@ -380,6 +288,7 @@ def add_to_cart(request, product_id):
         messages.info(request, f'{saree.name} is already in your cart!')
         return redirect('shop')
 
+    # Item successfully added
     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
         return JsonResponse({
             'success': True,
@@ -390,6 +299,9 @@ def add_to_cart(request, product_id):
 
     messages.success(request, f'{saree.name} has been added to your cart!')
     return redirect('shop')
+
+
+# update_cart_item view removed since quantity is always 1
 
 
 @login_required
@@ -413,11 +325,13 @@ def remove_from_cart(request, item_id):
 
 @login_required
 def checkout_cart(request):
+    # Redirect to address selection first
     return redirect('select_address_checkout')
 
 
 @login_required
 def clear_cart_after_payment(request):
+    """Clear cart after successful payment"""
     try:
         cart = Cart.objects.get(user=request.user)
         cart.items.all().delete()
@@ -511,6 +425,7 @@ def profile_view(request):
     try:
         profile = request.user.userprofile
     except UserProfile.DoesNotExist:
+        # Create profile if it doesn't exist
         profile = UserProfile.objects.create(
             user=request.user,
             mobile_number=''
@@ -529,6 +444,7 @@ def profile_view(request):
 # Address Management Views
 @login_required
 def select_address_buy_now(request, product_id):
+    """Address selection page for single product purchase"""
     saree = get_object_or_404(Saree, id=product_id, available=True)
     user_addresses = Address.objects.filter(user=request.user)
 
@@ -536,6 +452,7 @@ def select_address_buy_now(request, product_id):
         address_id = request.POST.get('address_id')
         if address_id:
             address = get_object_or_404(Address, id=address_id, user=request.user)
+            # Store address in session for payment
             request.session['selected_address_id'] = address.id
             request.session['product_id'] = product_id
             return redirect('process_buy_now_payment')
@@ -550,6 +467,7 @@ def select_address_buy_now(request, product_id):
 
 @login_required
 def select_address_checkout(request):
+    """Address selection page for cart checkout"""
     cart = get_object_or_404(Cart, user=request.user)
 
     if not cart.items.exists():
@@ -562,6 +480,7 @@ def select_address_checkout(request):
         address_id = request.POST.get('address_id')
         if address_id:
             address = get_object_or_404(Address, id=address_id, user=request.user)
+            # Store address in session for payment
             request.session['selected_address_id'] = address.id
             return redirect('process_checkout_payment')
 
@@ -575,6 +494,7 @@ def select_address_checkout(request):
 
 @login_required
 def add_address(request):
+    """Add new address"""
     if request.method == 'POST':
         name = request.POST.get('name')
         full_name = request.POST.get('full_name')
@@ -586,6 +506,7 @@ def add_address(request):
         pincode = request.POST.get('pincode')
         is_default = request.POST.get('is_default') == 'on'
 
+        # Validation
         if not all([name, full_name, phone, address_line_1, city, state, pincode]):
             messages.error(request, 'Please fill in all required fields.')
             return render(request, 'address/add_address.html')
@@ -605,6 +526,7 @@ def add_address(request):
             )
             messages.success(request, 'Address added successfully!')
 
+            # Redirect based on where user came from
             action = request.GET.get('action')
             if action == 'buy_now':
                 product_id = request.GET.get('product_id')
@@ -613,6 +535,7 @@ def add_address(request):
             elif action == 'checkout':
                 return redirect('select_address_checkout')
 
+            # Fallback to manage addresses
             return redirect('manage_addresses')
 
         except Exception as e:
@@ -623,13 +546,17 @@ def add_address(request):
 
 @login_required
 def manage_addresses(request):
+    """Manage user addresses"""
     addresses = Address.objects.filter(user=request.user)
-    context = {'addresses': addresses}
+    context = {
+        'addresses': addresses
+    }
     return render(request, 'address/manage_addresses.html', context)
 
 
 @login_required
 def edit_address(request, address_id):
+    """Edit existing address"""
     address = get_object_or_404(Address, id=address_id, user=request.user)
 
     if request.method == 'POST':
@@ -643,6 +570,7 @@ def edit_address(request, address_id):
         address.pincode = request.POST.get('pincode')
         address.is_default = request.POST.get('is_default') == 'on'
 
+        # Validation
         if not all([address.name, address.full_name, address.phone, address.address_line_1, address.city, address.state, address.pincode]):
             messages.error(request, 'Please fill in all required fields.')
             return render(request, 'address/edit_address.html', {'address': address})
@@ -659,6 +587,7 @@ def edit_address(request, address_id):
 
 @login_required
 def delete_address(request, address_id):
+    """Delete address"""
     address = get_object_or_404(Address, id=address_id, user=request.user)
 
     if request.method == 'POST':
@@ -671,6 +600,7 @@ def delete_address(request, address_id):
 
 @login_required
 def process_buy_now_payment(request):
+    """Process payment for single product with selected address"""
     address_id = request.session.get('selected_address_id')
     product_id = request.session.get('product_id')
 
@@ -684,6 +614,7 @@ def process_buy_now_payment(request):
     amount = saree.price * 100  # paise
     razorpay_order = client.order.create({'amount': amount, 'currency': 'INR', 'payment_capture': '1'})
 
+    # Create order with selected address
     order = Order.objects.create(
         saree=saree,
         amount=saree.price,
@@ -692,6 +623,7 @@ def process_buy_now_payment(request):
         delivery_address=address
     )
 
+    # Clear session data
     del request.session['selected_address_id']
     del request.session['product_id']
 
@@ -707,6 +639,7 @@ def process_buy_now_payment(request):
 
 @login_required
 def process_checkout_payment(request):
+    """Process payment for cart checkout with selected address"""
     address_id = request.session.get('selected_address_id')
 
     if not address_id:
@@ -720,15 +653,18 @@ def process_checkout_payment(request):
         messages.warning(request, 'Your cart is empty!')
         return redirect('cart')
 
+    # Calculate total amount
     total_amount = cart.get_total_price()
     razorpay_amount = total_amount * 100  # Convert to paise
 
+    # Create Razorpay order
     razorpay_order = client.order.create({
         'amount': razorpay_amount,
         'currency': 'INR',
         'payment_capture': '1'
     })
 
+    # Create orders for each cart item with selected address
     orders = []
     for cart_item in cart.items.all():
         order = Order.objects.create(
@@ -741,6 +677,7 @@ def process_checkout_payment(request):
         )
         orders.append(order)
 
+    # Clear session data
     del request.session['selected_address_id']
 
     context = {
@@ -754,3 +691,4 @@ def process_checkout_payment(request):
         'address': address
     }
     return render(request, 'checkout.html', context)
+

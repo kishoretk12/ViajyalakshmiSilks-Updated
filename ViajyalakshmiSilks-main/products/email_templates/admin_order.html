@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>New Order</title>
+</head>
+<body style="font-family:Arial;background:#fafafa;padding:20px;">
+<div style="max-width:650px;margin:auto;background:#fff;padding:20px;border-radius:6px;">
+    <h2 style="color:#b30000;">🚨 New Order Received</h2>
+
+    <h3>Customer Details</h3>
+    <p>
+        <strong>Name:</strong> {{ full_name }}<br>
+        <strong>Phone:</strong> {{ phone }}<br>
+        <strong>Address:</strong><br>
+        {{ address_line_1 }}<br>
+        {% if address_line_2 %}{{ address_line_2 }}<br>{% endif %}
+        {{ city }}, {{ state }} - {{ pincode }}
+    </p>
+
+    <h3>Items</h3>
+    <ul>
+        {% for item in items %}
+            <li>{{ item.name }} (x{{ item.qty }}) — ₹{{ item.price }}</li>
+        {% endfor %}
+    </ul>
+
+    <h3>Total Amount: ₹{{ total }}</h3>
+
+    <p>Login to admin panel to process order.</p>
+</div>
+</body>
+</html>
+
