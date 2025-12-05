@@ -1,206 +1,110 @@
-from django.core.mail import send_mail
-from django.conf import settings
-from django.template.loader import render_to_string
-from django.utils.html import strip_tags
-from django.utils import timezone
+# products/email_utils.py
 import logging
+from django.conf import settings
+from django.core.mail import send_mail
 
 logger = logging.getLogger(__name__)
 
-
 def send_order_notification_to_admin(orders):
     """
-    Send email notification to admin when new order(s) are placed
+    orders: queryset/list of Order objects
+    Sends a detailed admin email
     """
     try:
         if not orders:
             return False
-            
-        # Handle QuerySet or list of orders
-        if hasattr(orders, '__iter__') and not isinstance(orders, str):
-            # It's a QuerySet or list
-            orders_list = list(orders)  # Convert QuerySet to list
+        first = orders[0]
+        order_ids = ", ".join(str(o.id) for o in orders)
+        total_amount = sum(o.amount for o in orders)
+        addr = getattr(first, 'delivery_address', None)
+
+        lines = [
+            f"New order(s): {order_ids}",
+            "",
+            "Customer details:"
+        ]
+        if addr:
+            lines += [
+                f"Name: {addr.full_name}",
+                f"Phone: {addr.phone}",
+                f"Address: {addr.address_line_1}" + (f", {addr.address_line_2}" if addr.address_line_2 else ""),
+                f"{addr.city}, {addr.state} - {addr.pincode}",
+                ""
+            ]
         else:
-            # It's a single order
-            orders_list = [orders]
-        
-        first_order = orders_list[0]
-        
-        # Calculate total amount
-        total_amount = sum(order.amount for order in orders_list)
-        
-        # Prepare context for email template
-        context = {
-            'orders': orders_list,
-            'total_orders': len(orders_list),
-            'total_amount': total_amount,
-            'customer': first_order.user if first_order.user else 'Guest Customer',
-            'customer_profile': None
-        }
-        
-        # Get customer profile if user exists
-        if first_order.user:
-            try:
-                context['customer_profile'] = first_order.user.userprofile
-            except:
-                context['customer_profile'] = None
-        
-        # Email subject
-        if len(orders_list) == 1:
-            subject = f'New Order #{first_order.id} - ViajyalakshmiSilks'
-        else:
-            subject = f'New Orders ({len(orders_list)} items) - ViajyalakshmiSilks'
-        
-        # Create email content
-        message = f"""
-NEW ORDER NOTIFICATION - ViajyalakshmiSilks
-{'='*50}
+            lines.append(f"User: {first.user.get_full_name() or first.user.username}")
 
-Order Details:
-"""
-        
-        for order in orders_list:
-            customer_info = ""
-            if order.user:
-                # Get delivery address from order
-                if order.delivery_address:
-                    customer_info = f"""
-Customer: {order.delivery_address.full_name}
-Email: {order.user.email}
-Phone: {order.delivery_address.phone}
-Address: {order.delivery_address.get_full_address()}
-"""
-                else:
-                    # Fallback for orders without delivery address
-                    try:
-                        profile = order.user.userprofile
-                        customer_info = f"""
-Customer: {order.user.get_full_name() or order.user.username}
-Email: {order.user.email}
-Phone: {profile.mobile_number}
-Address: No delivery address provided
-"""
-                    except:
-                        customer_info = f"""
-Customer: {order.user.get_full_name() or order.user.username}
-Email: {order.user.email}
-Phone: Not available
-Address: Not available
-"""
-            else:
-                customer_info = f"""
-Customer: Guest
-Email: {order.guest_email or 'Not provided'}
-Phone: {order.guest_phone or 'Not provided'}
-Address: {order.guest_address or 'Not provided'}
-"""
-            
-            message += f"""
-Order ID: {order.id}
-Product: {order.saree.name}
-Quantity: {order.quantity}
-Amount: ₹{order.amount}
-Payment ID: {order.razorpay_payment_id}
-Order Date: {timezone.localtime(order.created_at).strftime('%d %B %Y at %I:%M %p IST')}
+        lines += ["Items:"]
+        for o in orders:
+            qty = getattr(o, 'quantity', 1) or 1
+            lines.append(f"- {o.saree.name if getattr(o,'saree',None) else 'Item'} (x{qty}): Rs.{o.amount}")
 
-{customer_info}
-{'='*30}
-"""
-        
-        message += f"""
-TOTAL AMOUNT: ₹{total_amount}
+        lines += [
+            "",
+            f"Total amount: Rs.{total_amount}",
+            f"Payment ID: {first.razorpay_payment_id or 'N/A'}",
+            "",
+            f"Admin panel: {getattr(settings, 'SITE_URL', 'http://example.com')}/admin/",
+            "",
+            "Regards,",
+            "Vijayalakshmi Silks"
+        ]
 
-Please process these orders and arrange for shipping.
-
-Best regards,
-ViajyalakshmiSilks System
-"""
-        
-        # Send email
-        send_mail(
-            subject=subject,
-            message=message,
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[settings.ADMIN_EMAIL],
-            fail_silently=False,
-        )
-        
-        logger.info(f"Order notification email sent successfully for {len(orders_list)} orders")
-        return True
-        
-    except Exception as e:
-        logger.error(f"Failed to send order notification email: {str(e)}")
+        admin_email = getattr(settings, 'ADMIN_EMAIL', None)
+        if admin_email:
+            send_mail(f"[Vijayalakshmi Silks] New Order(s) #{order_ids}", "\n".join(lines),
+                      settings.DEFAULT_FROM_EMAIL, [admin_email])
+            logger.info("Admin order notification email sent to %s", admin_email)
+            return True
+        logger.warning("ADMIN_EMAIL not configured; cannot send admin email.")
         return False
+    except Exception as e:
+        logger.exception("send_order_notification_to_admin failed: %s", e)
+        return False
+
 
 def send_order_confirmation_to_customer(order):
     """
-    Send order confirmation email to customer
+    Sends per-order confirmation email with receipt details.
     """
     try:
-        if not order.user or not order.user.email:
+        user_email = order.user.email if order.user and getattr(order.user, 'email', None) else None
+        if not user_email:
+            logger.warning("Order %s has no user email; skipping confirmation", order.id)
             return False
-            
-        subject = f'Order Confirmation #{order.id} - ViajyalakshmiSilks'
-        
-        message = f"""
-Dear {order.user.get_full_name() or order.user.username},
 
-Thank you for your order! Your order has been confirmed.
+        addr = getattr(order, 'delivery_address', None)
+        lines = [
+            f"Hello {addr.full_name if addr else (order.user.get_full_name() or order.user.username)},",
+            "",
+            f"Thank you for your order #{order.id}. Details below:",
+            "",
+            f"Item: {order.saree.name if getattr(order,'saree',None) else 'Item'}",
+            f"Quantity: {order.quantity or 1}",
+            f"Amount: Rs.{order.amount}",
+            "",
+            f"Payment ID: {order.razorpay_payment_id or 'N/A'}",
+            "",
+        ]
+        if addr:
+            lines += [
+                "Delivery Address:",
+                f"{addr.full_name}",
+                f"{addr.address_line_1}" + (f", {addr.address_line_2}" if addr.address_line_2 else ""),
+                f"{addr.city}, {addr.state} - {addr.pincode}",
+                ""
+            ]
+        lines += [
+            "We will pack & ship soon. For queries reply to this email.",
+            "",
+            "Regards,",
+            "Vijayalakshmi Silks"
+        ]
 
-ORDER DETAILS:
-{'='*30}
-Order ID: {order.id}
-Product: {order.saree.name}
-Quantity: {order.quantity}
-Amount: ₹{order.amount}
-Order Date: {timezone.localtime(order.created_at).strftime('%d %B %Y at %I:%M %p IST')}
-
-SHIPPING INFORMATION:
-"""
-        
-        # Get delivery address from the order
-        if order.delivery_address:
-            message += f"""
-Name: {order.delivery_address.full_name}
-Phone: {order.delivery_address.phone}
-Address: {order.delivery_address.get_full_address()}
-"""
-        else:
-            # Fallback: try to get from user profile (for backward compatibility)
-            try:
-                profile = order.user.userprofile
-                message += f"""
-Name: {order.user.get_full_name() or order.user.username}
-Phone: {profile.mobile_number}
-Address: Please add delivery address to your account.
-"""
-            except:
-                message += """
-Please update your profile with shipping address.
-"""
-        
-        message += f"""
-
-Your order will be processed and shipped soon.
-You will receive a tracking notification once your order is dispatched.
-
-Thank you for shopping with ViajyalakshmiSilks!
-
-Best regards,
-ViajyalakshmiSilks Team
-"""
-        
-        send_mail(
-            subject=subject,
-            message=message,
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[order.user.email],
-            fail_silently=False,
-        )
-        
-        logger.info(f"Order confirmation email sent to customer for order {order.id}")
+        subject = f"Order Confirmation & Receipt - Order #{order.id}"
+        send_mail(subject, "\n".join(lines), settings.DEFAULT_FROM_EMAIL, [user_email])
+        logger.info("Order confirmation email sent to %s for order %s", user_email, order.id)
         return True
-        
     except Exception as e:
-        logger.error(f"Failed to send customer confirmation email: {str(e)}")
+        logger.exception("send_order_confirmation_to_customer failed for %s: %s", getattr(order,'id', 'N/A'), e)
         return False
