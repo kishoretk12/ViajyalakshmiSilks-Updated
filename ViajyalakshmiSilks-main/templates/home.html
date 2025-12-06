@@ -25,9 +25,37 @@
 .hero-title { font-size: 3.5rem; font-weight: 700; margin-bottom: 20px; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); }
 .hero-subtitle { font-size: 1.3rem; margin-bottom: 30px; opacity: 0.9; line-height: 1.6; }
 
+
+.btn-section{
+     position: absolute;
+    left: 30%;
+    bottom: 370px;             /* distance from bottom of banner */
+    transform: translateX(-50%);
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    justify-content: center;
+    z-index: 50;
+    padding: 0 12px;
+}
+.shopnow{
+    display: inline-block;
+    padding: 12px 32px;
+    font-weight: 700;
+    border-radius: 40px;
+    background: linear-gradient(135deg, #8b4513 0%, #a0522d 50%, #cd853f 100%);
+    font-size: 15px;
+    border: none;
+    color: white;
+    text-decoration: none;
+    text-align: center;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.384);
+
+}
 .cta-button {
     display: inline-block;
-    background: #ff6b6b;
+    /* background: #ff6b6b; */
+    background: linear-gradient(135deg, #8b4513 0%, #a0522d 50%, #cd853f 100%);
     color: white;
     padding: 15px 35px;
     text-decoration: none;
@@ -38,6 +66,35 @@
     box-shadow: 0 8px 25px rgba(255, 107, 107, 0.3);
     margin: 10px;
 }
+
+
+.image-icon {
+      display: inline-block;
+       text-align: center;
+        border: 4px solid #f4e4bc; 
+        width: 58px;
+   height: 58px;
+   border-radius: 50%;
+   margin-bottom: 10px !important;
+         }
+         .star{
+             margin-bottom: 10px !important;
+         }
+
+.icon-text {
+   border-radius: 50%;
+   background: linear-gradient(135deg, #8b4513 0%, #a0522d 50%, #cd853f 100%);
+   padding: 10px;
+    color: white;
+    font-size: 24px;
+    font-weight: bold; 
+    text-align: center  ;
+   width: 50px;
+   height: 50px;
+   margin-bottom: 15px !important;
+}
+
+
 .cta-button:hover { background: #ff5252; transform: translateY(-2px); box-shadow: 0 12px 35px rgba(255, 107, 107, 0.4); color: white; }
 
 .features-section { padding: 80px 20px; background: #f8f9fa; }
@@ -62,7 +119,7 @@
 .banner-image:hover { transform: scale(1.05); }
 
 .stats-section { background: linear-gradient(135deg, #8b4513 0%, #a0522d 50%, #cd853f 100%); color: white; padding: 60px 20px; text-align: center; }
-.stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 40px; max-width: 800px; margin: 0 auto; }
+.stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 40px; max-width: 1500px; margin: 0 auto; }
 .stat-item { padding: 20px; }
 .stat-number { font-size: 2.5rem; font-weight: 700; margin-bottom: 10px; color: #f4e4bc; }
 .stat-label { font-size: 1.1rem; opacity: 0.9; }
@@ -71,6 +128,25 @@
 .cta-section h2 { font-size: 2.5rem; margin-bottom: 20px; font-weight: 700; }
 .cta-section p { font-size: 1.2rem; margin-bottom: 40px; opacity: 0.9; }
 
+
+@media (max-width: 982px) {
+    .hero-title { font-size: 2.5rem; }
+    .hero-subtitle { font-size: 1.1rem; }
+    .section-title { font-size: 2rem; }
+    .features-grid { grid-template-columns: 1fr; gap: 30px; }
+    .about-content { grid-template-columns: 1fr; gap: 40px; }
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
+
+    .btn-section {
+        bottom: 176px;
+        gap: 8px;
+        left: 30%;
+        transform: translateX(-50%);
+        padding: 0 8px;
+    }
+    .shopnow { padding: 9px 18px; font-size: 13px; border-radius: 32px; }
+}
+
 @media (max-width: 768px) {
     .hero-title { font-size: 2.5rem; }
     .hero-subtitle { font-size: 1.1rem; }
@@ -78,29 +154,50 @@
     .features-grid { grid-template-columns: 1fr; gap: 30px; }
     .about-content { grid-template-columns: 1fr; gap: 40px; }
     .stats-grid { grid-template-columns: repeat(2, 1fr); }
+
+    .btn-section {
+        bottom: 65px;
+        gap: 8px;
+        left: 30%;
+        transform: translateX(-50%);
+        padding: 0 8px;
+    }
+    .shopnow { padding: 9px 18px; font-size: 13px; border-radius: 32px; }
 }
 @media (max-width: 480px) {
     .hero-title { font-size: 2rem; }
     .cta-button { padding: 12px 25px; font-size: 1rem; }
     .feature-card { padding: 30px 20px; }
     .stats-grid { grid-template-columns: 1fr; }
+    .btn-section {
+        bottom: 65px;
+        gap: 8px;
+        left: 30%;
+        transform: translateX(-50%);
+        padding: 0 8px;
+    }
+    .shopnow { padding: 9px 18px; font-size: 13px; border-radius: 32px; }
 }
 </style>
 
 <!-- Banner Image Section -->
-<section style="padding: 0; margin: 0;">
+<section style="padding: 0; margin: 0; position: relative;">
     <img src="{% static 'images/vls-banner.png' %}" alt="Vijayalakshmi Silks Collection" style="width: 100%; height: auto; display: block;">
+    <div class="btn-section">
+        <a href="/shop/" class="shopnow">Shop Now</a>
+
+    </div>
 </section>
 
 <!-- Hero Section -->
-<section class="hero-section">
+<!-- <section class="hero-section">
     <div class="hero-content">
         <h1 class="hero-title">Vijayalakshmi Silks</h1>
         <p class="hero-subtitle">Discover the finest collection of traditional and contemporary sarees crafted with love and precision. Each piece tells a story of elegance and heritage.</p>
         <a href="/shop/" class="cta-button">Explore Collection</a>
         <a href="#about" class="cta-button" style="background: transparent; border: 2px solid white;">Learn More</a>
     </div>
-</section>
+</section> -->
 
 <!-- Features Section -->
 <section class="features-section">
@@ -158,8 +255,34 @@
                 <p>Each saree in our collection is carefully curated to bring you the perfect blend of traditional craftsmanship and contemporary style. From vibrant festival wear to elegant formal attire, we have something special for every woman.</p>
                 <a href="/shop/" class="cta-button">Shop Now</a>
             </div>
-            <div class="about-image">
-                <img src="{% static 'images/vls-banner.png' %}" alt="Vijayalakshmi Silks Banner" class="banner-image">
+            <!-- <div class="about-image">
+                <img src="{% static 'images/saree-people.jpg' %}" alt="Vijayalakshmi Silks Banner" class="banner-image">
+            </div> -->
+            <div>
+                <div class="row g-3">
+                    <div class="col-12 col-md-6">
+                     <div class="about-image">
+                <img src="{% static 'images/saree2.webp' %}" alt="Vijayalakshmi Silks Banner" class="banner-image">
+            </div>
+                    </div>
+                     <div class="col-12 col-md-6">
+                     <div class="about-image">
+                <img src="{% static 'images/saree4.jpg' %}" alt="Vijayalakshmi Silks Banner" class="banner-image">
+            </div>
+                    </div>
+                     <div class="col-12 col-md-6">
+                     <div class="about-image">
+                <img src="{% static 'images/saree3.jpg' %}" alt="Vijayalakshmi Silks Banner" class="banner-image">
+            </div>
+                    </div>
+                     <div class="col-12 col-md-6">
+                     <div class="about-image">
+                <img src="{% static 'images/saree5.jpg' %}" alt="Vijayalakshmi Silks Banner" class="banner-image">
+            </div>
+                    </div>
+
+                      
+                </div>
             </div>
         </div>
     </div>
@@ -189,12 +312,165 @@
     </div>
 </section>
 
+
+<section class="about-section" id="about">
+     <div class="container">
+        <!-- <h2 class="section-title">Shalini Sukumar</h2>
+        <p class="section-subtitle">We bring you the perfect blend of tradition and modernity with our exquisite saree collection</p> -->
+
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="image-icon">
+                   <p class="icon-text">S</p>
+                </div>
+                <p class="star">⭐⭐⭐⭐⭐</p>
+                <h3 class="feature-title">Shalini Sukumar</h3>
+                <p class="feature-description">As I have visited this shop for purchasing my engagement saree it was so nice and comfortable for me nd price was affordable  service was so gentle♥️</p>
+            </div>
+
+          <div class="feature-card">
+                <div class="image-icon">
+                   <p class="icon-text">K</p>
+                </div>
+                <p class="star">⭐⭐⭐⭐</p>
+                <h3 class="feature-title">Kavya</h3>
+                <p class="feature-description"> Beautiful sarees and great quality. The staff were very helpful and the prices were fair. Definitely a good place to shop</p>
+            </div>
+
+            <div class="feature-card">
+                <div class="image-icon">
+                   <p class="icon-text">R</p>
+                </div>
+                <p class="star">⭐⭐⭐⭐⭐</p>
+                <h3 class="feature-title">Rajan</h3>
+                <p class="feature-description">சேலைகள் ரொம்ப நல்ல quality. விலையும் சரியானது. Service super. வாங்க ரொம்ப நல்ல shop</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+
 <!-- Call to Action Section -->
-<section class="cta-section">
+<section class="cta-section mb-4">
     <div class="container">
         <h2>Ready to Find Your Perfect Saree?</h2>
         <p>Browse our exclusive collection and discover the perfect saree for your next special occasion.</p>
         <a href="/shop/" class="cta-button">Start Shopping</a>
     </div>
 </section>
+
+
+
+
+
+
+
+
+<section>
+    <div class="container-fluid py-4 px-3">
+        <div class="row g-3 text-center">
+
+            <!-- Helpful Links -->
+            <div class="col-12 col-md-3">
+                <div>
+                    <h6 class="fw-semibold mb-3">Helpful Links</h6>
+                    <div class="d-flex flex-column align-items-center">
+                        <a class="text-decoration-none text-dark mb-2" href="/">Home</a>
+                        <a class="text-decoration-none text-dark mb-2" href="/shop/">Shop</a>
+                        <a class="text-decoration-none text-dark mb-2" href="/cart/">
+                            Cart
+                            {% if user.is_authenticated and cart_total_items > 0 %}
+                                <span class="cart-count" id="cart-count">({{ cart_total_items }})</span>
+                            {% endif %}
+                        </a>
+
+                        {% if user.is_authenticated %}
+                        <a class="text-decoration-none text-dark mb-2" href="/profile/">
+                            {{ user.get_full_name|default:user.username }}
+                        </a>
+                        <a class="text-decoration-none text-dark mb-2" href="/address/manage/">
+                            Addresses
+                        </a>
+                        {% endif %}
+
+                        <a class="text-decoration-none text-dark mb-2" href="/admin/">Admin</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Address -->
+            <div class="col-12 col-md-3">
+                <div>
+                    <h6 class="fw-semibold mb-3">Address</h6>
+                    <p class="mb-0">
+                        14/25B, TK Nambi St, Kanchipuram,<br>
+                        Arappanacheri, Tamil Nadu 631501
+                    </p>
+                </div>
+            </div>
+
+            <!-- Contact Us -->
+            <div class="col-12 col-md-3">
+                <div>
+                    <h6 class="fw-semibold mb-3">Contact Us</h6>
+
+                    <!-- Email -->
+                    <p class="mb-2">
+                        <i class="fa-regular fa-message"></i> :
+                        <a class="text-decoration-none text-dark" href="mailto:vijayalakshmisilks96@gmail.com">
+                            vijayalakshmisilks96@gmail.com
+                        </a>
+                    </p>
+
+                    <!-- Phone numbers -->
+                    <div class="d-flex flex-column align-items-center gap-1">
+                        <p class="mb-1">
+                            <i class="fa-solid fa-phone"></i> :
+                            <a class="text-decoration-none text-dark" href="tel:+919791579731">9791579731</a>
+                        </p>
+                        <p class="mb-1">
+                            <i class="fa-solid fa-phone"></i> :
+                            <a class="text-decoration-none text-dark" href="tel:+918870707424">8870707424</a>
+                        </p>
+                    </div>
+
+                    <!-- WhatsApp numbers -->
+                    <div class="d-flex flex-column align-items-center gap-1 mt-2">
+                        <p class="mb-1">
+                            <i class="fa-brands fa-whatsapp"></i> :
+                            <a class="text-decoration-none text-dark" href="https://wa.me/916380729316">6380729316</a>
+                        </p>
+                        <p class="mb-1">
+                            <i class="fa-brands fa-whatsapp"></i> :
+                            <a class="text-decoration-none text-dark" href="https://wa.me/916381230383">6381230383</a>
+                        </p>
+                    </div>
+
+                    <!-- Instagram -->
+                    <div class="mt-3">
+                        <a class="text-decoration-none text-dark" href="https://www.instagram.com/vijayalakshmi_silks_kpm/">
+                            <i class="fa-brands fa-instagram fs-4"></i>
+                        </a>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Google Map -->
+            <div class="col-12 col-md-3">
+                <iframe 
+                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3890.307330628755!2d79.70932757483872!3d12.823406287478502!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3a52c3cfc4f370d9%3A0x10f1897307c1851c!2sKANCHIPURAM%20VIJAYALAKSHMI%20SILKS!5e0!3m2!1sen!2sin!4v1765004484884!5m2!1sen!2sin" 
+                    width="100%" 
+                    height="180" 
+                    style="border:0;" 
+                    allowfullscreen 
+                    loading="lazy">
+                </iframe>
+            </div>
+
+        </div>
+    </div>
+</section>
+
 {% endblock %}
