@@ -196,7 +196,7 @@
 }
 
 .carousel-dot.active {
-    background-color: deeppink;
+    background: linear-gradient(135deg, #8b4513 0%, #a0522d 50%, #cd853f 100%);
 }
 
 .carousel-dot:hover {
@@ -216,8 +216,8 @@
 
 .product-price {
     font-size: 18px;
-    color: deeppink;
-    font-weight: bold;
+    color: black;
+    font-weight: 600;
     margin: 8px 0;
 }
 
@@ -231,9 +231,9 @@
 }
 
 .buy-button, .cart-button {
-    padding: 12px 16px;
+    padding: 8px  16px !important;
     border: none;
-    border-radius: 8px;
+    border-radius: 40px;
     cursor: pointer;
     font-size: 13px;
     font-weight: 600;
@@ -270,13 +270,18 @@
 }
 
 .buy-button {
-    background: linear-gradient(135deg, #e91e63, #c2185b);
+    padding: 10px 16px;
+        background: linear-gradient(135deg, #4caf50, #388e3c);
+  /* background: linear-gradient(135deg, #8b4513 0%, #a0522d 50%, #cd853f 100%); */
     color: white;
     border: 2px solid transparent;
+    border: none;
+    outline: none;
 }
 
 .buy-button:hover {
-    background: linear-gradient(135deg, #c2185b, #ad1457);
+     background: linear-gradient(135deg, #4caf50, #388e3c);
+    /* background: linear-gradient(135deg, #c2185b, #ad1457); */
     color: white;
     text-decoration: none;
     transform: translateY(-2px);
@@ -284,13 +289,19 @@
 }
 
 .cart-button {
-    background: linear-gradient(135deg, #4caf50, #388e3c);
+    border: none !important;
+    outline: none !important;
+    /* background: linear-gradient(135deg, #4caf50, #388e3c); */
+    background: linear-gradient(135deg, #8b4513 0%, #a0522d 50%, #cd853f 100%);
     color: white;
     border: 2px solid transparent;
 }
 
 .cart-button:hover {
-    background: linear-gradient(135deg, #388e3c, #2e7d32);
+     border: none;
+    outline: none;
+      background: linear-gradient(135deg, #8b4513 0%, #a0522d 50%, #cd853f 100%);
+    /* background: linear-gradient(135deg, #388e3c, #2e7d32); */
     transform: translateY(-2px);
     box-shadow: 0 4px 15px rgba(76, 175, 80, 0.4);
 }
@@ -371,12 +382,12 @@
     }
     
     .buy-button, .cart-button {
-        padding: 10px 12px;
         font-size: 12px;
         min-width: 85px;
         max-width: 120px;
         flex: 1;
         white-space: nowrap;
+        border-radius: 40px !important;
     }
     
     .button-icon {
@@ -396,7 +407,6 @@
     }
     
     .buy-button, .cart-button {
-        padding: 8px 10px;
         font-size: 11px;
         border-radius: 6px;
         min-width: 75px;
@@ -444,7 +454,7 @@
             <!-- Product Info -->
             <div class="product-info">
                 <h3 class="product-name">{{ saree.name }}</h3>
-                <p class="product-price">₹{{ saree.price }}</p>
+                <p class="product-price">₹ {{ saree.price }}</p>
                 <div class="product-buttons">
                     {% if user.is_authenticated %}
                         {% if saree.id in cart_items %}
@@ -455,7 +465,7 @@
                         {% else %}
                             <form method="post" action="{% url 'add_to_cart' saree.id %}" class="add-to-cart-form" style="display: inline;">
                                 {% csrf_token %}
-                                <button type="submit" class="cart-button">
+                                <button type="submit" class="cart-button ">
                                     <span class="button-icon">🛒</span>
                                     Add Cart
                                 </button>
