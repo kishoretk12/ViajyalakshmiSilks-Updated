@@ -1,0 +1,606 @@
+{% extends "base.html" %}
+{% load static custom_filters %}
+
+{% block title %}{{ saree.name }} | Pure Kanchipuram Silk Saree | {{ site_settings.store_name }}{% endblock %}
+{% block meta_description %}{{ saree.description|truncatechars:160 }}{% endblock %}
+
+{% block content %}
+<style>
+    /* ===== VARIABLES ===== */
+    :root {
+        --brown-deep: #1a0a02;
+        --brown-rich: #3b1f0f;
+        --gold: #c08a3e;
+        --gold-light: #e8c47a;
+        --cream: #fdfaf5;
+        --text-muted: #7a6355;
+    }
+
+    /* ===== BREADCRUMB ===== */
+    .pdp-breadcrumb {
+        background: var(--cream);
+        padding: 14px 40px;
+        border-bottom: 1px solid rgba(192,138,62,0.12);
+        font-size: 12.5px;
+        color: var(--text-muted);
+        font-weight: 600;
+        letter-spacing: 0.3px;
+    }
+    .pdp-breadcrumb a { text-decoration: none; color: var(--gold); transition: color 0.2s; }
+    .pdp-breadcrumb a:hover { color: var(--brown-rich); }
+    .pdp-breadcrumb .sep { margin: 0 10px; opacity: 0.4; }
+
+    /* ===== MAIN GRID ===== */
+    .pdp-grid {
+        display: grid;
+        grid-template-columns: 45% 1fr;
+        gap: 0;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 40px 20px; /* Reduced to avoid exceeding on small screens */
+        align-items: start;
+        overflow: hidden; /* Contain children */
+    }
+
+
+    /* ===== GALLERY ===== */
+    .pdp-gallery { position: sticky; top: 80px; }
+
+    .gallery-main-wrap {
+        position: relative;
+        border-radius: 24px;
+        overflow: hidden;
+        background: #f8f0e8;
+        box-shadow: 0 20px 60px rgba(59,31,15,0.14);
+        margin-bottom: 16px;
+        aspect-ratio: 3/4;
+        max-height: 600px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    .gallery-main-wrap img {
+        width: 100%; height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+        display: block;
+    }
+    .gallery-main-wrap:hover img { transform: scale(1.03); }
+
+    /* Badge overlay */
+    .img-badge {
+        position: absolute;
+        top: 18px; left: 18px;
+        background: linear-gradient(135deg, var(--brown-deep), var(--brown-rich));
+        color: var(--gold-light);
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        padding: 6px 14px;
+        border-radius: 50px;
+        z-index: 2;
+    }
+
+    /* Zoom icon */
+    .zoom-btn {
+        position: absolute;
+        bottom: 16px; right: 16px;
+        width: 42px; height: 42px;
+        background: rgba(255,255,255,0.9);
+        backdrop-filter: blur(8px);
+        border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        cursor: zoom-in;
+        font-size: 16px;
+        color: var(--brown-rich);
+        border: none;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+        transition: all 0.2s;
+        z-index: 2;
+    }
+    .zoom-btn:hover { transform: scale(1.1); background: white; }
+
+    .gallery-thumbs {
+        display: flex;
+        gap: 12px;
+        overflow-x: auto;
+        padding-bottom: 4px;
+    }
+    .gallery-thumbs::-webkit-scrollbar { height: 4px; }
+    .gallery-thumbs::-webkit-scrollbar-thumb { background: rgba(192,138,62,0.3); border-radius: 10px; }
+
+    .pdp-thumb {
+        flex-shrink: 0;
+        width: 80px; height: 100px;
+        border-radius: 12px;
+        overflow: hidden;
+        cursor: pointer;
+        border: 2.5px solid transparent;
+        transition: all 0.25s;
+        opacity: 0.6;
+    }
+    .pdp-thumb:hover { opacity: 0.9; border-color: rgba(192,138,62,0.4); }
+    .pdp-thumb.active { opacity: 1; border-color: var(--gold); box-shadow: 0 4px 14px rgba(192,138,62,0.3); }
+    .pdp-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+    /* ===== PRODUCT INFO ===== */
+    .pdp-info { padding: 0 0 0 48px; }
+
+    .pdp-label {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 5px 14px;
+        background: rgba(192,138,62,0.1);
+        color: var(--gold);
+        border: 1px solid rgba(192,138,62,0.25);
+        border-radius: 50px;
+        font-size: 10.5px;
+        font-weight: 800;
+        letter-spacing: 1.8px;
+        text-transform: uppercase;
+        margin-bottom: 18px;
+    }
+
+    .pdp-name {
+        font-family: 'Playfair Display', serif;
+        font-size: clamp(1.8rem, 3vw, 2.8rem);
+        color: var(--brown-rich);
+        line-height: 1.15;
+        margin-bottom: 8px;
+        font-weight: 800;
+    }
+
+    .pdp-price-row {
+        display: flex;
+        align-items: baseline;
+        gap: 14px;
+        margin-bottom: 28px;
+        padding-bottom: 28px;
+        border-bottom: 1px solid rgba(192,138,62,0.12);
+    }
+    .pdp-price {
+        font-size: 2.4rem;
+        font-weight: 900;
+        color: var(--brown-rich);
+        font-family: 'Poppins', sans-serif;
+    }
+    .pdp-mrp {
+        font-size: 1.1rem;
+        color: #aaa;
+        text-decoration: line-through;
+        font-weight: 500;
+    }
+    .pdp-save {
+        background: #e8f5e9;
+        color: #2e7d32;
+        padding: 3px 10px;
+        border-radius: 50px;
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+    /* Specs pills */
+    .pdp-specs {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 28px;
+    }
+    .pdp-spec-pill {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 16px;
+        background: var(--cream);
+        border: 1px solid rgba(192,138,62,0.15);
+        border-radius: 50px;
+        font-size: 12.5px;
+        color: var(--brown-rich);
+        font-weight: 600;
+    }
+    .pdp-spec-pill i { color: var(--gold); font-size: 13px; }
+
+    /* Description */
+    .pdp-desc {
+        font-size: 15px;
+        color: var(--text-muted);
+        line-height: 1.85;
+        margin-bottom: 32px;
+    }
+
+    /* Actions */
+    .pdp-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+        margin-bottom: 32px;
+    }
+    .pdp-btn-wa {
+        grid-column: span 2;
+        background: #25d366;
+        color: white;
+        font-weight: 700;
+    }
+
+    .pdp-btn {
+        height: 58px;
+        border-radius: 16px;
+        font-weight: 800;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        font-size: 15px;
+        border: none;
+        cursor: pointer;
+        text-decoration: none;
+        transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+        letter-spacing: 0.3px;
+    }
+    .pdp-btn-buy {
+        background: linear-gradient(135deg, var(--brown-deep) 0%, #5c2e15 100%);
+        color: var(--gold-light);
+        box-shadow: 0 8px 24px rgba(26,13,6,0.25);
+    }
+    .pdp-btn-buy:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 16px 40px rgba(26,13,6,0.35);
+        color: #fff;
+    }
+    .pdp-btn-cart {
+        background: white;
+        color: var(--brown-rich);
+        border: 2px solid var(--brown-rich);
+    }
+    .pdp-btn-cart:hover {
+        background: var(--brown-rich);
+        color: white;
+        transform: translateY(-3px);
+        box-shadow: 0 10px 30px rgba(59,31,15,0.2);
+    }
+    .pdp-btn-wa {
+        grid-column: 1 / -1;
+        background: linear-gradient(135deg, #25D366, #128C7E);
+        color: white;
+        height: 52px;
+        border-radius: 16px;
+    }
+    .pdp-btn-wa:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 30px rgba(37,211,102,0.3);
+    }
+
+    /* Trust strip */
+    .trust-strip {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+        padding: 20px 0;
+        border-top: 1px solid rgba(192,138,62,0.12);
+        margin-top: 4px;
+    }
+    .trust-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 6px;
+    }
+    .trust-icon {
+        width: 42px; height: 42px;
+        background: rgba(192,138,62,0.1);
+        border-radius: 12px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 18px;
+        color: var(--gold);
+    }
+    .trust-label {
+        font-size: 11px;
+        color: var(--text-muted);
+        font-weight: 600;
+        line-height: 1.4;
+    }
+
+    /* ===== LIGHTBOX ===== */
+    .pdp-lightbox {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.95);
+        z-index: 99999;
+        align-items: center;
+        justify-content: center;
+    }
+    .pdp-lightbox.open { display: flex; }
+    .pdp-lightbox img {
+        max-width: 90vw;
+        max-height: 90vh;
+        object-fit: contain;
+        border-radius: 8px;
+        box-shadow: 0 0 80px rgba(0,0,0,0.8);
+    }
+    .lb-close {
+        position: absolute;
+        top: 20px; right: 24px;
+        color: white;
+        font-size: 36px;
+        cursor: pointer;
+        opacity: 0.7;
+        transition: opacity 0.2s;
+        background: none; border: none;
+        line-height: 1;
+    }
+    .lb-close:hover { opacity: 1; }
+
+    /* ===== RELATED ===== */
+    .pdp-related {
+        background: var(--cream);
+        padding: 80px 20px; /* Reduced side padding to prevent overflow */
+        border-top: 1px solid rgba(192,138,62,0.12);
+        width: 100%;
+        overflow-x: hidden;
+    }
+
+    .pdp-related-title {
+        font-family: 'Playfair Display', serif;
+        font-size: clamp(1.6rem, 3vw, 2.2rem);
+        color: var(--brown-rich);
+        text-align: center;
+        margin-bottom: 8px;
+        font-weight: 800;
+    }
+    .pdp-related-sub {
+        text-align: center;
+        color: var(--text-muted);
+        font-size: 14px;
+        margin-bottom: 40px;
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 991px) {
+        .pdp-grid { grid-template-columns: 1fr; padding: 30px 20px; gap: 0; }
+        .pdp-gallery { position: static; margin-bottom: 30px; }
+        .pdp-info { padding: 0; }
+        .pdp-name { font-size: 1.9rem; }
+        .gallery-main-wrap { aspect-ratio: 4/5; }
+        .pdp-related { padding: 60px 20px; }
+    }
+    @media (max-width: 600px) {
+        .pdp-breadcrumb { padding: 12px 20px; }
+        .pdp-grid { padding: 20px 16px; }
+        .trust-strip { grid-template-columns: repeat(3,1fr); gap: 8px; }
+        .trust-icon { width: 36px; height: 36px; font-size: 15px; }
+        .trust-label { font-size: 10px; }
+        .pdp-actions { grid-template-columns: 1fr; }
+        .pdp-btn-wa { grid-column: auto; }
+        .pdp-price { font-size: 1.9rem; }
+        .pdp-related { padding: 40px 16px; }
+    }
+</style>
+
+<!-- Breadcrumb -->
+<div class="pdp-breadcrumb">
+    <div style="max-width: 1400px; margin: 0 auto;">
+        <a href="/">Home</a>
+        <span class="sep">›</span>
+        <a href="/shop/">Shop</a>
+        <span class="sep">›</span>
+        <span style="color: var(--brown-rich);">{{ saree.name }}</span>
+    </div>
+</div>
+
+<!-- Main Grid -->
+<div class="pdp-grid">
+
+    <!-- Left: Gallery -->
+    <div class="pdp-gallery">
+        <div class="gallery-main-wrap">
+            <div class="img-badge">✦ Authentic Silk Mark</div>
+            <img src="{{ saree.main_image.url }}" id="pdp-main-img" alt="{{ saree.name }}">
+            {% if saree.video %}
+            <video id="pdp-main-video" loop muted playsinline disablePictureInPicture style="display:none; width:100%; height:100%; object-fit:cover; cursor:pointer;" onclick="this.paused ? this.play() : this.pause()" preload="none">
+                <source src="{{ saree.video.url }}" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+            {% endif %}
+            <button class="zoom-btn" id="pdp-zoom-btn" onclick="openLightbox(document.getElementById('pdp-main-img').src)" title="Zoom">
+                <i class="fa-solid fa-magnifying-glass-plus"></i>
+            </button>
+        </div>
+
+        {% if saree.get_all_images|length > 1 or saree.video %}
+        <div class="gallery-thumbs">
+            {% for img in saree.get_all_images %}
+            <div class="pdp-thumb {% if forloop.first %}active{% endif %}"
+                 onclick="switchImage('{{ img.url }}', this)">
+                <img src="{{ img.url }}" alt="View {{ forloop.counter }}">
+            </div>
+            {% endfor %}
+            
+            {% if saree.video %}
+            <div class="pdp-thumb" onclick="switchVideo('{{ saree.video.url }}', this)">
+                <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; background:var(--brown-rich); color:var(--gold-light); width:100%; height:100%; gap:4px;">
+                    <i class="fa-solid fa-circle-play" style="font-size: 20px;"></i>
+                    <span style="font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px;">Video</span>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Right: Info -->
+    <div class="pdp-info">
+        <div class="pdp-label">
+            <i class="fa-solid fa-gem"></i> Kanchipuram Heritage Silk
+        </div>
+
+        <h1 class="pdp-name">{{ saree.name }}</h1>
+
+        <div class="pdp-price-row">
+            <div class="pdp-price">{{ site_settings.currency_symbol }}{{ saree.price }}</div>
+            {% if saree.mrp and saree.mrp > saree.price %}
+                <div class="pdp-mrp">{{ site_settings.currency_symbol }}{{ saree.mrp }}</div>
+                <div class="pdp-save">Save {{ site_settings.currency_symbol }}{{ saree.get_savings_amount }} ({{ saree.get_discount_percent }}% OFF)</div>
+            {% endif %}
+        </div>
+
+
+        <!-- Spec Pills -->
+        <div class="pdp-specs">
+            <div class="pdp-spec-pill"><i class="fa-solid fa-layer-group"></i> Pure Handloom Silk</div>
+            <div class="pdp-spec-pill"><i class="fa-solid fa-star"></i> Real Silver/Gold Zari</div>
+            <div class="pdp-spec-pill"><i class="fa-solid fa-location-dot"></i> Origin: Kanchipuram</div>
+            {% if saree.stock_quantity <= 5 %}
+            <div class="pdp-spec-pill" style="color:#c0392b; border-color:rgba(192,57,43,0.25); background:#fff5f5;">
+                <i class="fa-solid fa-fire" style="color:#c0392b;"></i> Only {{ saree.stock_quantity }} left!
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Description -->
+        <div class="pdp-desc">
+            {{ saree.description|linebreaks }}
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="pdp-actions">
+            <a href="{% url 'buy_now' saree.slug %}" class="pdp-btn pdp-btn-buy">
+                <i class="fa-solid fa-bolt"></i> Buy Now
+            </a>
+            
+            {% if user.is_authenticated %}
+                {% with cart_info=cart_items_map|get_item:saree.id %}
+                    {% if cart_info %}
+                        <div class="qty-selector-container" style="height: 58px;">
+                            <div class="qty-selector" style="height: 100%;">
+                                <button type="button" class="qty-btn minus" onclick="updateCartQty('{{ cart_info.id }}', 'decrease', '{{ saree.id }}')">&minus;</button>
+                                <span class="qty-val" id="qty-{{ saree.id }}" style="font-size: 20px;">{{ cart_info.quantity }}</span>
+                                <button type="button" class="qty-btn plus" onclick="updateCartQty('{{ cart_info.id }}', 'increase', '{{ saree.id }}')">+</button>
+                            </div>
+                        </div>
+                    {% else %}
+                        <form action="{% url 'add_to_cart' saree.slug %}" method="post" style="display:contents;" class="add-to-cart-form">
+                            {% csrf_token %}
+                            <button type="submit" class="pdp-btn pdp-btn-cart">
+                                <i class="fa-solid fa-cart-shopping"></i> Add to Cart
+                            </button>
+                        </form>
+                    {% endif %}
+                {% endwith %}
+            {% else %}
+                <a href="{% url 'login' %}?next={{ request.path }}" class="pdp-btn pdp-btn-cart">
+                    <i class="fa-solid fa-cart-shopping"></i> Add to Cart
+                </a>
+            {% endif %}
+
+            <a href="https://wa.me/{{ site_settings.whatsapp_number|cut:' '|cut:'+' }}?text=Hi!%20I%20am%20interested%20in%20{{ saree.name|urlencode }}%20priced%20at%20{{ site_settings.currency_symbol }}{{ saree.price }}"
+               target="_blank" class="pdp-btn pdp-btn-wa">
+                <i class="fa-brands fa-whatsapp"></i> Ask on WhatsApp
+            </a>
+        </div>
+
+
+        <!-- Trust Strip -->
+        <div class="trust-strip">
+            <div class="trust-item">
+                <div class="trust-icon"><i class="fa-solid fa-certificate"></i></div>
+                <div class="trust-label">100% Authentic Silk</div>
+            </div>
+            <div class="trust-item">
+                <div class="trust-icon"><i class="fa-solid fa-truck-fast"></i></div>
+                <div class="trust-label">Free Insured Shipping</div>
+            </div>
+            <div class="trust-item">
+                <div class="trust-icon"><i class="fa-solid fa-rotate-left"></i></div>
+                <div class="trust-label">Easy Returns</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Lightbox -->
+<div class="pdp-lightbox" id="pdp-lightbox" onclick="closeLightbox()">
+    <button class="lb-close" onclick="closeLightbox()">×</button>
+    <img id="lb-img" src="" alt="Zoomed view">
+</div>
+
+<!-- Related Products -->
+{% if related_products %}
+<div class="pdp-related">
+    <div style="max-width: 1400px; margin: 0 auto;">
+        <p style="text-align:center; font-size:11px; font-weight:800; letter-spacing:4px; color:var(--gold); text-transform:uppercase; margin-bottom:10px;">You May Also Adore</p>
+        <h2 class="pdp-related-title">Similar Sarees</h2>
+        <p class="pdp-related-sub">Handpicked from the same collection for your perfect look</p>
+        <div class="products-wrapper">
+            {% for s in related_products %}
+            {% include "components/card.html" with saree=s %}
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Schema.org -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org/",
+  "@type": "Product",
+  "name": "{{ saree.name }}",
+  "image": "{{ request.scheme }}://{{ request.get_host }}{{ saree.main_image.url }}",
+  "description": "{{ saree.description|truncatechars:300 }}",
+  "brand": { "@type": "Brand", "name": "{{ site_settings.store_name }}" },
+  "offers": {
+    "@type": "Offer",
+    "url": "{{ request.build_absolute_uri }}",
+    "priceCurrency": "INR",
+    "price": "{{ saree.price }}",
+    "availability": "https://schema.org/InStock"
+  }
+}
+</script>
+
+<script>
+    function switchImage(src, thumb) {
+        document.getElementById('pdp-main-img').style.display = 'block';
+        document.getElementById('pdp-main-img').src = src;
+        const vid = document.getElementById('pdp-main-video');
+        if (vid) {
+            vid.style.display = 'none';
+            vid.pause();
+        }
+        const zoomBtn = document.getElementById('pdp-zoom-btn');
+        if (zoomBtn) zoomBtn.style.display = 'flex';
+        
+        document.querySelectorAll('.pdp-thumb').forEach(t => t.classList.remove('active'));
+        thumb.classList.add('active');
+    }
+    
+    function switchVideo(src, thumb) {
+        document.getElementById('pdp-main-img').style.display = 'none';
+        const vid = document.getElementById('pdp-main-video');
+        if (vid) {
+            vid.style.display = 'block';
+            vid.load();
+            vid.play();
+        }
+        const zoomBtn = document.getElementById('pdp-zoom-btn');
+        if (zoomBtn) zoomBtn.style.display = 'none';
+        
+        document.querySelectorAll('.pdp-thumb').forEach(t => t.classList.remove('active'));
+        thumb.classList.add('active');
+    }
+
+    function openLightbox(src) {
+        document.getElementById('lb-img').src = src;
+        document.getElementById('pdp-lightbox').classList.add('open');
+        document.body.style.overflow = 'hidden';
+    }
+    function closeLightbox() {
+        document.getElementById('pdp-lightbox').classList.remove('open');
+        document.body.style.overflow = '';
+    }
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
+</script>
+{% endblock %}

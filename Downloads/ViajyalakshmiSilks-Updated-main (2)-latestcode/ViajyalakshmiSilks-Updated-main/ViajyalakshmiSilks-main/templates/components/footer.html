@@ -1,0 +1,246 @@
+<!-- ===== PREMIUM FOOTER ===== -->
+<footer id="main-footer">
+<style>
+    #main-footer {
+        background: linear-gradient(135deg, #1a0d06 0%, #2e1308 40%, #3b1f0f 100%);
+        color: rgba(255,255,255,0.85);
+        padding: 64px 40px 0;
+        font-family: 'Poppins', sans-serif;
+    }
+    .footer-grid {
+        display: grid;
+        grid-template-columns: 1.4fr 1fr 1.2fr;
+        gap: 48px;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding-bottom: 48px;
+        border-bottom: 1px solid rgba(192,138,62,0.15);
+    }
+    .footer-brand-name {
+        font-family: 'Playfair Display', Georgia, serif;
+        font-size: 24px;
+        font-weight: 700;
+        color: #e8c47a;
+        letter-spacing: 0.5px;
+        margin-bottom: 14px;
+    }
+    .footer-desc {
+        font-size: 13.5px;
+        line-height: 1.75;
+        color: rgba(255,255,255,0.65);
+        margin-bottom: 22px;
+        max-width: 280px;
+    }
+    .footer-social-row {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+    }
+    .footer-social-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 16px;
+        border-radius: 40px;
+        font-size: 13px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+    .footer-social-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.35);
+    }
+    .footer-social-btn.wa {
+        background: #25D366;
+        color: white;
+    }
+    .footer-social-btn.ig {
+        background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fd5949 45%, #d6249f 60%, #285AEB 90%);
+        color: white;
+    }
+    .footer-col-title {
+        font-family: 'Playfair Display', serif;
+        font-size: 16px;
+        font-weight: 600;
+        color: #e8c47a;
+        margin-bottom: 20px;
+        position: relative;
+        padding-bottom: 10px;
+    }
+    .footer-col-title::after {
+        content: '';
+        position: absolute;
+        bottom: 0; left: 0;
+        width: 40px; height: 2px;
+        background: linear-gradient(90deg, #c08a3e, transparent);
+        border-radius: 2px;
+    }
+    .footer-links {
+        list-style: none;
+        padding: 0; margin: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+    .footer-links a {
+        color: rgba(255,255,255,0.65);
+        text-decoration: none;
+        font-size: 13.5px;
+        transition: color 0.2s, padding-left 0.2s;
+        display: flex;
+        align-items: center;
+        gap: 7px;
+    }
+    .footer-links a::before { content: '›'; color: #c08a3e; font-size: 16px; }
+    .footer-links a:hover { color: #e8c47a; padding-left: 5px; }
+    .footer-contact-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        margin-bottom: 12px;
+        font-size: 13.5px;
+        color: rgba(255,255,255,0.7);
+        line-height: 1.5;
+    }
+    .footer-contact-item i {
+        color: #c08a3e;
+        font-size: 15px;
+        margin-top: 2px;
+        min-width: 18px;
+        text-align: center;
+    }
+    .footer-contact-item a {
+        color: rgba(255,255,255,0.7);
+        text-decoration: none;
+        transition: color 0.2s;
+    }
+    .footer-contact-item a:hover { color: #e8c47a; }
+    .footer-bottom {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+    .footer-copyright {
+        font-size: 12.5px;
+        color: rgba(255,255,255,0.4);
+    }
+    .footer-tagline {
+        font-size: 12px;
+        color: rgba(192,138,62,0.6);
+        font-style: italic;
+    }
+    @media (max-width: 900px) {
+        .footer-grid { grid-template-columns: 1fr 1fr; gap: 36px; }
+        #main-footer { padding: 48px 24px 0; }
+    }
+    @media (max-width: 600px) {
+        .footer-grid { grid-template-columns: 1fr; gap: 32px; }
+        #main-footer { padding: 40px 20px 0; }
+        .footer-desc { max-width: 100%; }
+        .footer-bottom { flex-direction: column; text-align: center; }
+    }
+</style>
+
+<div class="footer-grid">
+    <!-- Col 1: Brand -->
+    <div>
+        <div class="footer-brand-name">✦ {{ site_settings.store_name }}</div>
+        <p class="footer-desc">
+            Rooted in Kanchipuram's centuries-old weaving legacy.
+            Every saree is a testament to pure silk craftsmanship,
+            authentic zari work, and timeless elegance — handpicked
+            directly from master weavers.
+        </p>
+        <div class="footer-social-row">
+            <a href="https://wa.me/{{ site_settings.whatsapp_number|cut:' '|cut:'+' }}?text=Hello!%20I'm%20interested%20in%20your%20saree%20collection"
+               target="_blank" rel="noopener noreferrer"
+               class="footer-social-btn wa" aria-label="WhatsApp">
+                <i class="fa-brands fa-whatsapp"></i> WhatsApp
+            </a>
+            <a href="https://www.instagram.com/vijayalakshmi_silks_kpm/"
+               target="_blank" rel="noopener noreferrer"
+               class="footer-social-btn ig" aria-label="Instagram">
+                <i class="fa-brands fa-instagram"></i> Instagram
+            </a>
+        </div>
+    </div>
+
+    <!-- Col 2: Quick Links -->
+    <div>
+        <h3 class="footer-col-title">Quick Links</h3>
+        <ul class="footer-links">
+            <li><a href="/">Home</a></li>
+            <li><a href="/shop/">Shop Collection</a></li>
+            <li><a href="/cart/">My Cart
+                {% if user.is_authenticated and cart_total_items > 0 %}
+                <span style="background:#c08a3e;color:#fff;border-radius:10px;padding:1px 6px;font-size:10px;font-weight:700;margin-left:4px;">{{ cart_total_items }}</span>
+                {% endif %}
+            </a></li>
+            {% if user.is_authenticated %}
+            <li><a href="/profile/">My Profile</a></li>
+            <li><a href="/address/manage/">Manage Addresses</a></li>
+            <li><a href="/logout/">Logout</a></li>
+            {% else %}
+            <li><a href="/login/">Login</a></li>
+            <li><a href="/signup/">Sign Up</a></li>
+            {% endif %}
+        </ul>
+    </div>
+
+    <!-- Col 3: Contact -->
+    <div>
+        <h3 class="footer-col-title">Contact Us</h3>
+
+        <div class="footer-contact-item">
+            <i class="fa-solid fa-location-dot"></i>
+            <span>{{ site_settings.address|linebreaksbr }}</span>
+        </div>
+
+        <div class="footer-contact-item">
+            <i class="fa-solid fa-phone"></i>
+            <div>
+                <a href="tel:{{ site_settings.contact_phone }}">{{ site_settings.contact_phone }}</a>
+            </div>
+        </div>
+
+        <div class="footer-contact-item">
+            <i class="fa-brands fa-whatsapp"></i>
+            <div>
+                <a href="https://wa.me/916380729316" target="_blank" rel="noopener">+91 63807 29316</a><br>
+                <a href="https://wa.me/916381230383" target="_blank" rel="noopener">+91 63812 30383</a>
+            </div>
+        </div>
+
+        <div class="footer-contact-item">
+            <i class="fa-brands fa-instagram"></i>
+            <a href="https://www.instagram.com/vijayalakshmi_silks_kpm/" target="_blank" rel="noopener">
+                @vijayalakshmi_silks_kpm
+            </a>
+        </div>
+
+        <div class="footer-contact-item">
+            <i class="fa-regular fa-envelope"></i>
+            <a href="mailto:{{ site_settings.email }}">
+                {{ site_settings.email }}
+            </a>
+        </div>
+
+        <!-- Google Map Embed -->
+        <div style="margin-top: 25px; overflow: hidden; border-radius: 15px; border: 1px solid rgba(192,138,62,0.3); box-shadow: 0 8px 24px rgba(0,0,0,0.25);">
+            <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3890.307330435231!2d79.7119025!3d12.823406300000002!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3a52c3cfc4f370d9%3A0x10f1897307c1851c!2sKANCHIPURAM%20VIJAYALAKSHMI%20SILKS!5e0!3m2!1sen!2sin!4v1777524102078!5m2!1sen!2sin" width="100%" height="160" style="border:0; display: block;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+        </div>
+    </div>
+</div>
+
+<div class="footer-bottom">
+    <p class="footer-copyright">© {% now "Y" %} {{ site_settings.store_name }}. All rights reserved.</p>
+    <p class="footer-tagline">Pure Silk · Zari Work · Handloom · Kanchipuram Heritage</p>
+</div>
+
+</footer>

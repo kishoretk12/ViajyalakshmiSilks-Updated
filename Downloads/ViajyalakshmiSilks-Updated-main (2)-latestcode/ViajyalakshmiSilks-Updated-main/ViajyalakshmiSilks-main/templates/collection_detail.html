@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ collection.name }} Silk Sarees Collection | {{ site_settings.store_name }}{% endblock %}
+{% block meta_description %}{{ collection.description|truncatechars:160 }}{% endblock %}
+
+{% block content %}
+<!-- ===== COLLECTION BANNER ===== -->
+<div style="position: relative; height: 400px; background: #1a0d06; overflow: hidden;">
+    {% if collection.image %}
+    <img src="{{ collection.image.url }}" style="width: 100%; height: 100%; object-fit: cover; opacity: 0.6;">
+    {% endif %}
+    <div style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 0 24px; background: linear-gradient(to bottom, transparent, rgba(0,0,0,0.7));">
+        <h1 style="font-family: 'Playfair Display', serif; font-size: clamp(2.5rem, 6vw, 4rem); color: #fff; margin-bottom: 15px;">{{ collection.name }}</h1>
+        <p style="color: rgba(255,255,255,0.9); max-width: 700px; font-size: 1.1rem; line-height: 1.6;">{{ collection.description }}</p>
+    </div>
+</div>
+
+<!-- ===== BREADCRUMBS ===== -->
+<div style="background: #fdfaf5; padding: 15px 40px; border-bottom: 1px solid #eee;">
+    <div style="max-width: 1300px; margin: 0 auto; font-size: 13px; color: #7a6355; font-weight: 600;">
+        <a href="/" style="text-decoration: none; color: #c08a3e;">Home</a> 
+        <span style="margin: 0 10px;">/</span> 
+        <span>Collections</span> 
+        <span style="margin: 0 10px;">/</span> 
+        <span style="color: #3b1f0f;">{{ collection.name }}</span>
+    </div>
+</div>
+
+<!-- ===== PRODUCTS GRID ===== -->
+<style>
+    .products-wrapper {
+        display: grid !important;
+        grid-template-columns: repeat(3, 1fr) !important;
+        gap: 30px !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+
+    .product-card {
+        width: 100% !important;
+        min-width: 0 !important;
+        margin: 0 !important;
+    }
+
+    @media (max-width: 991px) {
+        .products-wrapper {
+            grid-template-columns: repeat(2, 1fr) !important;
+            gap: 20px !important;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .products-wrapper {
+            grid-template-columns: repeat(2, 1fr) !important;
+            gap: 12px !important;
+        }
+    }
+</style>
+
+<div style="background: #fff; padding: 60px 40px;">
+    <div style="max-width: 1300px; margin: 0 auto;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px;">
+            <h2 style="font-family: 'Playfair Display', serif; font-size: 2rem; color: #3b1f0f;">Showing {{ sarees|length }} Designs</h2>
+            <div style="color: #7a6355; font-size: 14px;">Filtered by: <strong>{{ collection.name }}</strong></div>
+        </div>
+
+        <div class="products-wrapper">
+            {% for saree in sarees %}
+            {% url 'login' as login_url %}
+            {% url 'shop' as shop_url %}
+            {% include "components/card.html" with saree=saree cart_items=cart_items user=user login_url=login_url|add:"?next="|add:shop_url %}
+            {% empty %}
+            <div style="text-align: center; width: 100%; padding: 100px 0;">
+                <i class="fa-solid fa-box-open" style="font-size: 3rem; color: #ddd; margin-bottom: 20px;"></i>
+                <p style="color: #7a6355;">No products found in this collection yet.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- Structured Data (BreadcrumbList) -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [{
+    "@type": "ListItem",
+    "position": 1,
+    "name": "Home",
+    "item": "{{ request.scheme }}://{{ request.get_host }}"
+  },{
+    "@type": "ListItem",
+    "position": 2,
+    "name": "Collections",
+    "item": "{{ request.scheme }}://{{ request.get_host }}"
+  },{
+    "@type": "ListItem",
+    "position": 3,
+    "name": "{{ collection.name }}",
+    "item": "{{ request.build_absolute_uri }}"
+  }]
+}
+</script>
+{% endblock %}

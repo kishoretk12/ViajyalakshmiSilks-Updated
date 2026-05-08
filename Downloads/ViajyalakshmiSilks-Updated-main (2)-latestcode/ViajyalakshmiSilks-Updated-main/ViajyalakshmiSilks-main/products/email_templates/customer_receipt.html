@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Order Receipt</title>
+</head>
+<body style="font-family: Arial, sans-serif; background:#f7f7f7; padding:20px;">
+    <div style="max-width:600px; margin:0 auto; background:white; padding:25px; border-radius:8px;">
+
+        <h2 style="color:#c2185b; text-align:center;">Thank You for Your Purchase!</h2>
+        <p>Hi {{ customer_name }},</p>
+
+        <p>We're happy to confirm your order. Below are your receipt details:</p>
+
+        <h3 style="color:#333;">Payment Details</h3>
+        <table style="width:100%; border-collapse:collapse;">
+            <tr>
+                <td><strong>Order ID:</strong></td>
+                <td>#{{ order_id }}</td>
+            </tr>
+            <tr>
+                <td><strong>Payment ID:</strong></td>
+                <td>{{ payment_id }}</td>
+            </tr>
+            <tr>
+                <td><strong>Amount Paid:</strong></td>
+                <td>₹{{ amount }}</td>
+            </tr>
+            <tr>
+                <td><strong>Payment Method:</strong></td>
+                <td>{{ payment_method }}</td>
+            </tr>
+            <tr>
+                <td><strong>Status:</strong></td>
+                <td>{{ payment_status }}</td>
+            </tr>
+        </table>
+
+        <h3 style="color:#333; margin-top:20px;">Delivery Information</h3>
+        <p>
+            {{ full_name }}<br>
+            {{ address_line_1 }}<br>
+            {% if address_line_2 %} {{ address_line_2 }}<br> {% endif %}
+            {{ city }}, {{ state }} - {{ pincode }}<br>
+            Phone: {{ phone }}
+        </p>
+
+        <h3 style="color:#333;">Items Ordered</h3>
+        <ul>
+        {% for item in items %}
+            <li>{{ item.name }} (x{{ item.qty }}) — ₹{{ item.price }}</li>
+        {% endfor %}
+        </ul>
+
+        <p style="margin-top:20px;">We will send your tracking details once the package is dispatched.</p>
+
+        <hr>
+        <p style="text-align:center; color:#888;">Vijayalakshmi Silks<br>Thank you for shopping with us!</p>
+    </div>
+</body>
+</html>
+

@@ -1,0 +1,183 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+    :root {
+        --primary: #1a0d06;
+        --accent: #c08a3e;
+        --bg-cream: #fdf6ec;
+    }
+
+    body {
+        background: var(--bg-cream);
+    }
+
+    .test-payment-container {
+        max-width: 500px;
+        margin: 80px auto;
+        padding: 0 20px;
+    }
+
+    .payment-card {
+        background: white;
+        border-radius: 24px;
+        box-shadow: 0 20px 60px rgba(59, 31, 15, 0.15);
+        border: 1px solid rgba(192, 138, 62, 0.2);
+        overflow: hidden;
+    }
+
+    .card-header {
+        background: var(--primary);
+        color: white;
+        padding: 30px;
+        text-align: center;
+    }
+
+    .card-header i {
+        font-size: 40px;
+        color: var(--accent);
+        margin-bottom: 15px;
+    }
+
+    .card-body {
+        padding: 40px;
+    }
+
+    .amount-display {
+        text-align: center;
+        margin-bottom: 30px;
+    }
+
+    .amount-label {
+        font-size: 14px;
+        color: #999;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .amount-value {
+        font-size: 42px;
+        font-weight: 800;
+        color: var(--primary);
+        font-family: 'Playfair Display', serif;
+    }
+
+    .order-summary {
+        background: #fdfaf5;
+        padding: 20px;
+        border-radius: 16px;
+        margin-bottom: 30px;
+    }
+
+    .summary-item {
+        display: flex;
+        justify-content: space-between;
+        font-size: 14px;
+        margin-bottom: 8px;
+        color: #7a6355;
+    }
+
+    .btn-group {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .btn-action {
+        width: 100%;
+        padding: 18px;
+        border-radius: 12px;
+        font-size: 16px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.3s;
+        border: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+    }
+
+    .btn-approve {
+        background: linear-gradient(135deg, var(--accent), #9a6b28);
+        color: white;
+        box-shadow: 0 10px 20px rgba(192, 138, 62, 0.3);
+    }
+
+    .btn-approve:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 15px 30px rgba(192, 138, 62, 0.4);
+    }
+
+    .btn-decline {
+        background: #fdf6ec;
+        color: #7a6355;
+        border: 1px solid #eee;
+    }
+
+    .btn-decline:hover {
+        background: #fff1f1;
+        color: #d93025;
+        border-color: #f8d7da;
+    }
+
+    .security-badge {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        margin-top: 30px;
+        color: #999;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+</style>
+
+<div class="test-payment-container">
+    <div class="payment-card">
+        <div class="card-header">
+            <i class="fa-solid fa-building-columns"></i>
+            <h2 style="margin: 0; font-size: 20px;">Heritage Gateway</h2>
+            <p style="margin: 5px 0 0; font-size: 13px; opacity: 0.7;">Secure Test Environment</p>
+        </div>
+        
+        <div class="card-body">
+            <div class="amount-display">
+                <div class="amount-label">Payable Amount</div>
+                <div class="amount-value">₹{{ total_amount }}</div>
+            </div>
+
+            <div class="order-summary">
+                <div style="font-weight: 700; color: var(--primary); margin-bottom: 10px; font-size: 13px;">SUMMARY</div>
+                {% for item in items %}
+                <div class="summary-item">
+                    <span>{{ item.name }} x {{ item.qty }}</span>
+                    <span>₹{{ item.price }}</span>
+                </div>
+                {% endfor %}
+            </div>
+
+            <form method="POST">
+                {% csrf_token %}
+                <div class="btn-group">
+                    <button type="submit" name="action" value="approve" class="btn-action btn-approve">
+                        <i class="fa-solid fa-shield-check"></i>
+                        Approve Payment
+                    </button>
+                    <button type="submit" name="action" value="decline" class="btn-action btn-decline">
+                        <i class="fa-solid fa-circle-xmark"></i>
+                        Decline Payment
+                    </button>
+                </div>
+            </form>
+
+            <div class="security-badge">
+                <i class="fa-solid fa-lock"></i>
+                256-Bit Encrypted Simulation
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

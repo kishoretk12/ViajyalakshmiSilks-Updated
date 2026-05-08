@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Under Maintenance | {{ site_settings.store_name }}{% endblock %}
+
+{% block content %}
+<div style="min-height: 80vh; display: flex; align-items: center; justify-content: center; background: #fdfaf5; padding: 40px;">
+    <div style="max-width: 600px; text-align: center; background: white; padding: 60px; border-radius: 30px; box-shadow: 0 20px 60px rgba(59,31,15,0.1);">
+        <div style="width: 100px; height: 100px; background: #fdf6ec; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 30px;">
+            <i class="fa-solid fa-screwdriver-wrench" style="font-size: 40px; color: #c08a3e;"></i>
+        </div>
+        
+        <h1 style="font-family: 'Playfair Display', serif; font-size: 32px; color: #3b1f0f; margin-bottom: 20px;">We'll Be Back Shortly!</h1>
+        <p style="font-family: 'Poppins', sans-serif; color: #7a6355; line-height: 1.8; margin-bottom: 30px;">
+            {{ site_settings.store_name }} is currently undergoing scheduled maintenance to improve your shopping experience. 
+            We are polishing our digital silk collection and will be live again soon.
+        </p>
+        
+        <div style="padding: 20px; border-top: 1px solid #f0f0f0; margin-top: 20px;">
+            <p style="font-size: 14px; font-weight: 600; color: #3b1f0f; margin-bottom: 10px;">Need urgent assistance?</p>
+            <div style="display: flex; justify-content: center; gap: 20px;">
+                <a href="https://wa.me/{{ site_settings.whatsapp_number|cut:' '|cut:'+' }}" style="text-decoration: none; color: #25D366; font-weight: 700; display: flex; align-items: center; gap: 8px;">
+                    <i class="fa-brands fa-whatsapp"></i> WhatsApp
+                </a>
+                <a href="mailto:{{ site_settings.email }}" style="text-decoration: none; color: #c08a3e; font-weight: 700; display: flex; align-items: center; gap: 8px;">
+                    <i class="fa-regular fa-envelope"></i> Email
+                </a>
+            </div>
+        </div>
+        
+        <p style="font-size: 12px; color: #999; margin-top: 40px;">© {% now "Y" %} {{ site_settings.store_name }}. Thank you for your patience.</p>
+    </div>
+</div>
+
+<style>
+    /* Hide navigation and footer during maintenance if desired */
+    #main-navbar, #main-footer, .floating-socials { display: none !important; }
+    body { background: #fdfaf5 !important; }
+</style>
+{% endblock %}

@@ -1,0 +1,239 @@
+{% extends 'dashboard/base_dashboard.html' %}
+{% load static %}
+{% load tz %}
+
+{% block title %}Order #{{ order.id }} Details{% endblock %}
+
+{% block dashboard_content %}
+<div class="header-section" style="margin-bottom: 40px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px;">
+    <div>
+        <a href="{% url 'dashboard_orders' %}" style="text-decoration: none; color: var(--text-muted); font-size: 14px; font-weight: 600;">
+            <i class="fa-solid fa-arrow-left"></i> Back to Orders
+        </a>
+        <h1 style="font-size: clamp(24px, 5vw, 32px); margin-top: 10px;">Order #{{ site_settings.invoice_prefix }}-{{ order.id }}</h1>
+    </div>
+    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+        <button onclick="document.getElementById('editInvoiceModal').style.display='flex'" class="btn btn-accent" style="flex: 1; white-space: nowrap;">
+            <i class="fa-solid fa-pen-to-square"></i> Edit
+        </button>
+        <a href="{% url 'print_invoice' order.id %}" target="_blank" class="btn btn-outline" style="flex: 1; white-space: nowrap;">
+            <i class="fa-solid fa-file-invoice"></i> Invoice
+        </a>
+        <a href="{% url 'print_shipping_label' order.id %}" target="_blank" class="btn btn-outline" style="flex: 1; white-space: nowrap;">
+            <i class="fa-solid fa-tag"></i> Label
+        </a>
+    </div>
+</div>
+
+
+<div class="dashboard-grid">
+
+    <!-- Left Column -->
+    <div class="left-col">
+        <!-- Fulfillment Section -->
+        <div class="content-card">
+            <h2 style="font-size: 20px; margin-bottom: 25px;">Fulfillment & Logistics</h2>
+            <form action="{% url 'update_order_status' order.id %}" method="POST">
+                {% csrf_token %}
+                <div class="fulfillment-form-grid">
+                    <div>
+                        <label style="display: block; font-size: 13px; font-weight: 700; color: var(--text-muted); margin-bottom: 8px;">ORDER STATUS</label>
+                        <select name="status" class="btn btn-outline" style="width: 100%; text-align: left; padding: 12px; height: 48px;">
+                            {% for code, label in order.STATUS_CHOICES %}
+                            <option value="{{ code }}" {% if order.status == code %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div>
+                        <label style="display: block; font-size: 13px; font-weight: 700; color: var(--text-muted); margin-bottom: 8px;">COURIER PARTNER</label>
+                        <input type="text" name="courier_name" value="{{ order.courier_name|default:'' }}" placeholder="e.g. BlueDart" style="width: 100%; padding: 12px; border-radius: 12px; border: 1px solid #eee; outline: none; height: 48px;">
+                    </div>
+                    <div class="full-width">
+                        <label style="display: block; font-size: 13px; font-weight: 700; color: var(--text-muted); margin-bottom: 8px;">TRACKING ID</label>
+                        <input type="text" name="tracking_id" value="{{ order.tracking_id|default:'' }}" placeholder="Enter tracking ID..." style="width: 100%; padding: 12px; border-radius: 12px; border: 1px solid #eee; outline: none;">
+                    </div>
+                    <div class="full-width">
+                        <label style="display: block; font-size: 13px; font-weight: 700; color: var(--text-muted); margin-bottom: 8px;">TRACKING URL (OPTIONAL)</label>
+                        <input type="url" name="courier_tracking_url" value="{{ order.courier_tracking_url|default:'' }}" placeholder="https://..." style="width: 100%; padding: 12px; border-radius: 12px; border: 1px solid #eee; outline: none;">
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-accent" style="width: 100%; margin-top: 20px; justify-content: center; height: 50px;">
+                    <i class="fa-solid fa-truck-fast"></i> Update Shipping Info
+                </button>
+            </form>
+        </div>
+
+        <!-- Order Items -->
+        <div class="content-card">
+            <h2 style="font-size: 20px; margin-bottom: 20px;">Ordered Items</h2>
+            <div class="order-item-card">
+                {% if order.saree.main_image %}
+                <img src="{{ order.saree.main_image.url }}" class="item-img">
+                {% endif %}
+                <div class="item-info">
+                    <div class="item-header">
+                        <div>
+                            <h3>{{ order.saree.name }}</h3>
+                            <p>Premium Handloom Silk Saree</p>
+                        </div>
+                        <span class="status-pill status-shipped">{{ order.get_status_display }}</span>
+                    </div>
+                    
+                    <div class="item-stats">
+                        <div>
+                            <div class="stat-label">Quantity</div>
+                            <div class="stat-val">{{ order.quantity }} units</div>
+                        </div>
+                        <div>
+                            <div class="stat-label">Unit Price</div>
+                            <div class="stat-val">{{ site_settings.currency_symbol }}{{ order.saree.price }}</div>
+                        </div>
+                        <div class="stat-total">
+                            <div class="stat-label">Subtotal</div>
+                            <div class="stat-val">{{ site_settings.currency_symbol }}{{ order.amount }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Right Column -->
+    <div class="right-col">
+        <!-- Customer Info -->
+        <div class="content-card">
+            <h2 style="font-size: 18px; margin-bottom: 20px;">Customer Profile</h2>
+            <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 25px;">
+                <div style="width: 50px; height: 50px; background: var(--accent); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 800; color: white; font-size: 20px;">
+                    {{ order.user.username|first|upper|default:order.guest_name|first|upper }}
+                </div>
+                <div>
+                    <div style="font-weight: 700; font-size: 16px;">{{ order.user.get_full_name|default:order.guest_name }}</div>
+                    <div style="font-size: 13px; color: var(--text-muted);">{{ order.user.email|default:order.guest_email }}</div>
+                </div>
+            </div>
+            
+            <div style="border-top: 1px solid #f0f0f0; padding-top: 20px; margin-top: 10px;">
+                <h3 style="font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 15px;">Shipping Address</h3>
+                <div style="font-size: 14px; line-height: 1.6; color: var(--primary); background: #fafafa; padding: 15px; border-radius: 12px;">
+                    {% if order.delivery_address %}
+                        <strong style="display: block; margin-bottom: 5px;">{{ order.delivery_address.full_name }}</strong>
+                        {{ order.delivery_address.address_line_1 }}<br>
+                        {% if order.delivery_address.address_line_2 %}{{ order.delivery_address.address_line_2 }}<br>{% endif %}
+                        {{ order.delivery_address.city }}, {{ order.delivery_address.state }} - {{ order.delivery_address.pincode }}<br>
+                        <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid #eee; font-weight: 700;">
+                            <i class="fa-solid fa-phone" style="margin-right: 5px; color: var(--accent);"></i> {{ order.delivery_address.phone }}
+                        </div>
+                    {% else %}
+                        {{ order.guest_address|linebreaksbr }}
+                        <div style="margin-top: 10px; font-weight: 700;">
+                            <i class="fa-solid fa-phone" style="margin-right: 5px; color: var(--accent);"></i> {{ order.guest_phone }}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #f0f0f0;">
+                <h3 style="font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 15px;">Payment Record</h3>
+                <div style="background: {% if order.paid %}#e6fffa{% else %}#fff5f5{% endif %}; padding: 20px; border-radius: 16px; border: 1px solid {% if order.paid %}#b2f5ea{% else %}#fed7d7{% endif %};">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                        <span style="font-size: 13px; font-weight: 600; color: #4a5568;">Status</span>
+                        <span class="status-pill {% if order.paid %}status-shipped{% else %}status-pending{% endif %}">
+                            {% if order.paid %}PAID{% else %}UNPAID{% endif %}
+                        </span>
+                    </div>
+                    <div style="font-size: 13px; color: #4a5568; margin-bottom: 5px;">Transaction ID</div>
+                    <div style="font-family: monospace; font-size: 12px; color: var(--primary); font-weight: 700; word-break: break-all;">
+                        {{ order.razorpay_payment_id|default:"CASH / PENDING" }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Invoice Modal -->
+<div id="editInvoiceModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10000; align-items: center; justify-content: center; backdrop-filter: blur(5px);">
+    <div class="content-card" style="width: 90%; max-width: 600px; padding: 30px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+            <h2 style="margin: 0; font-size: 24px;">Edit Invoice Details</h2>
+            <button onclick="document.getElementById('editInvoiceModal').style.display='none'" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #999;">&times;</button>
+        </div>
+        
+        <form action="{% url 'edit_invoice' order.id %}" method="POST">
+            {% csrf_token %}
+            <div style="max-height: 70vh; overflow-y: auto; padding-right: 10px;">
+                <h4 style="font-size: 13px; text-transform: uppercase; color: var(--accent); margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 5px;">Financials</h4>
+                <div class="form-group" style="margin-bottom: 20px;">
+                    <label style="display: block; font-size: 13px; font-weight: 700; margin-bottom: 8px;">Order Amount ({{ site_settings.currency_symbol }})</label>
+                    <input type="number" name="amount" value="{{ order.amount }}" class="form-control-premium" style="width: 100%; padding: 12px; border-radius: 12px; border: 1px solid #eee; outline: none;">
+                </div>
+                <div style="margin-bottom: 25px;">
+                    <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                        <input type="checkbox" name="paid" {% if order.paid %}checked{% endif %} style="width: 18px; height: 18px;">
+                        <span style="font-weight: 600;">Mark as Paid</span>
+                    </label>
+                </div>
+
+                <h4 style="font-size: 13px; text-transform: uppercase; color: var(--accent); margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 5px;">Customer & Shipping Address</h4>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
+                    <div class="form-group">
+                        <label style="display: block; font-size: 13px; font-weight: 700; margin-bottom: 8px;">Full Name</label>
+                        <input type="text" name="full_name" value="{{ order.delivery_address.full_name|default:order.guest_name }}" class="form-control-premium" style="width: 100%; padding: 12px; border-radius: 12px; border: 1px solid #eee;">
+                    </div>
+                    <div class="form-group">
+                        <label style="display: block; font-size: 13px; font-weight: 700; margin-bottom: 8px;">Phone Number</label>
+                        <input type="text" name="phone" value="{{ order.delivery_address.phone|default:order.guest_phone }}" class="form-control-premium" style="width: 100%; padding: 12px; border-radius: 12px; border: 1px solid #eee;">
+                    </div>
+                </div>
+
+                {% if order.delivery_address %}
+                <div class="form-group" style="margin-bottom: 20px;">
+                    <label style="display: block; font-size: 13px; font-weight: 700; margin-bottom: 8px;">Address Line 1</label>
+                    <input type="text" name="address_line_1" value="{{ order.delivery_address.address_line_1 }}" class="form-control-premium" style="width: 100%; padding: 12px; border-radius: 12px; border: 1px solid #eee;">
+                </div>
+                <div class="form-group" style="margin-bottom: 20px;">
+                    <label style="display: block; font-size: 13px; font-weight: 700; margin-bottom: 8px;">Address Line 2</label>
+                    <input type="text" name="address_line_2" value="{{ order.delivery_address.address_line_2 }}" class="form-control-premium" style="width: 100%; padding: 12px; border-radius: 12px; border: 1px solid #eee;">
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 20px;">
+                    <div>
+                        <label style="display: block; font-size: 11px; font-weight: 700; margin-bottom: 5px;">CITY</label>
+                        <input type="text" name="city" value="{{ order.delivery_address.city }}" class="form-control-premium" style="width: 100%; padding: 10px; font-size: 13px; border: 1px solid #eee;">
+                    </div>
+                    <div>
+                        <label style="display: block; font-size: 11px; font-weight: 700; margin-bottom: 5px;">STATE</label>
+                        <input type="text" name="state" value="{{ order.delivery_address.state }}" class="form-control-premium" style="width: 100%; padding: 10px; font-size: 13px; border: 1px solid #eee;">
+                    </div>
+                    <div>
+                        <label style="display: block; font-size: 11px; font-weight: 700; margin-bottom: 5px;">PINCODE</label>
+                        <input type="text" name="pincode" value="{{ order.delivery_address.pincode }}" class="form-control-premium" style="width: 100%; padding: 10px; font-size: 13px; border: 1px solid #eee;">
+                    </div>
+                </div>
+                {% else %}
+                <div class="form-group" style="margin-bottom: 20px;">
+                    <label style="display: block; font-size: 13px; font-weight: 700; margin-bottom: 8px;">Guest Shipping Address</label>
+                    <textarea name="guest_address" class="form-control-premium" style="width: 100%; padding: 12px; border-radius: 12px; border: 1px solid #eee; min-height: 100px;">{{ order.guest_address }}</textarea>
+                </div>
+                {% endif %}
+            </div>
+
+            <div style="display: flex; gap: 15px; margin-top: 30px; padding-top: 20px; border-top: 1px solid #f0f0f0;">
+                <button type="button" onclick="document.getElementById('editInvoiceModal').style.display='none'" class="btn btn-outline" style="flex: 1; justify-content: center;">Cancel</button>
+                <button type="submit" class="btn btn-accent" style="flex: 2; justify-content: center;">
+                    <i class="fa-solid fa-save"></i> Update Order & Invoice
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    .form-control-premium:focus {
+        border-color: var(--accent) !important;
+        box-shadow: 0 0 0 3px rgba(192, 138, 62, 0.1);
+    }
+</style>
+{% endblock %}

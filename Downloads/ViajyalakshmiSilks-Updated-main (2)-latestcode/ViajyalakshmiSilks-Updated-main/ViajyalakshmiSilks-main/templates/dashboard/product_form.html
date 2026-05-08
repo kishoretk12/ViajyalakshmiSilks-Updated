@@ -1,0 +1,147 @@
+{% extends 'dashboard/base_dashboard.html' %}
+{% load static %}
+
+{% block title %}{% if product %}Edit {{ product.name }}{% else %}Add Product{% endif %}{% endblock %}
+
+{% block dashboard_content %}
+<div class="header-section" style="margin-bottom: 40px;">
+    <a href="{% url 'dashboard_products' %}" style="text-decoration: none; color: var(--text-muted); font-size: 14px; font-weight: 600;">
+        <i class="fa-solid fa-arrow-left"></i> Back to Products
+    </a>
+    <h1 style="font-size: 32px; margin-top: 10px;">{% if product %}Edit Product{% else %}New Product{% endif %}</h1>
+</div>
+
+<form method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 30px;">
+        <!-- Left Column: Details -->
+        <div class="content-card">
+            <div style="margin-bottom: 25px;">
+                <label style="display: block; font-size: 14px; font-weight: 700; margin-bottom: 10px;">Product Name</label>
+                <input type="text" name="name" value="{{ product.name|default:'' }}" required style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #eee; outline: none; font-size: 16px;">
+            </div>
+            
+            <div style="margin-bottom: 25px;">
+                <label style="display: block; font-size: 14px; font-weight: 700; margin-bottom: 10px;">Description</label>
+                <textarea name="description" rows="10" style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #eee; outline: none; font-size: 14px; resize: vertical;">{{ product.description|default:'' }}</textarea>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px;">
+                <div>
+                    <label style="display: block; font-size: 14px; font-weight: 700; margin-bottom: 10px;">Price (₹)</label>
+                    <input type="number" name="price" value="{{ product.price|default:'' }}" required style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #eee; outline: none;">
+                </div>
+                <div>
+                    <label style="display: block; font-size: 14px; font-weight: 700; margin-bottom: 10px;">MRP (₹)</label>
+                    <input type="number" name="mrp" value="{{ product.mrp|default:'' }}" placeholder="Optional" style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #eee; outline: none;">
+                </div>
+                <div>
+                    <label style="display: block; font-size: 14px; font-weight: 700; margin-bottom: 10px;">Stock Quantity</label>
+                    <input type="number" name="stock" value="{{ product.stock_quantity|default:'10' }}" required style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #eee; outline: none;">
+                </div>
+            </div>
+
+
+            <div style="margin-top: 25px;">
+                <label style="display: block; font-size: 14px; font-weight: 700; margin-bottom: 10px;">Collections</label>
+                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; padding: 15px; border: 1px solid #eee; border-radius: 10px; background: #fafafa; max-height: 200px; overflow-y: auto;">
+                    {% for collection in collections %}
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 14px;">
+                            <input type="checkbox" name="collections" value="{{ collection.id }}" {% if product and collection in product.collections.all %}checked{% endif %}>
+                            {{ collection.name }}
+                        </label>
+                    {% empty %}
+                        <p style="font-size: 13px; color: #777; margin: 0;">No collections created yet.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: Media & Meta -->
+        <div class="right-col">
+            <!-- Media Card -->
+            <div class="content-card">
+                <h3 style="font-size: 16px; margin-bottom: 20px;">Product Media</h3>
+                
+                <!-- Main Image -->
+                <div style="border: 1px solid #eee; padding: 15px; border-radius: 12px; text-align: center; margin-bottom: 20px;">
+                    <label style="display: block; font-size: 13px; font-weight: 700; margin-bottom: 10px; text-align: left;">Main Image (Required)</label>
+                    {% if product.main_image %}
+                    <img src="{{ product.main_image.url }}" style="width: 120px; height: 150px; object-fit: cover; border-radius: 8px; margin-bottom: 15px;">
+                    {% endif %}
+                    <input type="file" name="main_image" accept="image/*" style="font-size: 12px; width: 100%;">
+                </div>
+
+                <!-- Additional Images -->
+                <div style="border: 1px solid #eee; padding: 15px; border-radius: 12px; text-align: center; margin-bottom: 20px;">
+                    <label style="display: block; font-size: 13px; font-weight: 700; margin-bottom: 10px; text-align: left;">Upload Multiple Images</label>
+                    <input type="file" name="additional_images" accept="image/*" multiple style="font-size: 12px; width: 100%;">
+                    <p style="font-size: 11px; color: var(--text-muted); margin-top: 8px;">Hold Ctrl/Cmd to pick multiple saree photos.</p>
+                    
+                    {% if product.get_all_images|length > 1 %}
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 15px; justify-content: center;">
+                        {% for img in product.get_all_images %}
+                            {% if img != product.main_image %}
+                            <img src="{{ img.url }}" style="width: 45px; height: 60px; object-fit: cover; border-radius: 4px; border: 1px solid #ddd;">
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Video -->
+                <div style="border: 1px solid #eee; padding: 15px; border-radius: 12px; text-align: center;">
+                    <label style="display: block; font-size: 13px; font-weight: 700; margin-bottom: 10px; text-align: left;">Product Video</label>
+                    {% if product.video %}
+                    <video src="{{ product.video.url }}" controls style="width: 100%; border-radius: 8px; margin-bottom: 15px; max-height: 150px; object-fit: cover;"></video>
+                    {% endif %}
+                    <input type="file" name="video" accept="video/*" style="font-size: 12px; width: 100%;">
+                    <p style="font-size: 11px; color: var(--text-muted); margin-top: 8px;">Upload high quality mp4 video clips.</p>
+                </div>
+            </div>
+
+            <!-- SEO & Marketing Card -->
+            <div class="content-card">
+                <h3 style="font-size: 16px; margin-bottom: 20px;">SEO & Marketing</h3>
+                <div style="display: flex; flex-direction: column; gap: 15px; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid #eee;">
+                    <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                        <input type="checkbox" name="is_featured" {% if product.is_featured %}checked{% endif %}>
+                        <span style="font-size: 14px;">Featured Product</span>
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                        <input type="checkbox" name="is_best_seller" {% if product.is_best_seller %}checked{% endif %}>
+                        <span style="font-size: 14px;">Best Seller</span>
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                        <input type="checkbox" name="is_new_arrival" {% if product.is_new_arrival %}checked{% endif %}>
+                        <span style="font-size: 14px;">New Arrival</span>
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                        <input type="checkbox" name="is_authentic_silk" {% if product.is_authentic_silk or not product %}checked{% endif %}>
+                        <span style="font-size: 14px;">Authentic Silk Badge</span>
+                    </label>
+                </div>
+
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; font-size: 12px; font-weight: 700; color: #777; margin-bottom: 5px; text-transform: uppercase;">URL Slug</label>
+                    <input type="text" name="slug" value="{{ product.slug|default:'' }}" placeholder="leave-blank-for-auto" style="width: 100%; padding: 8px; border-radius: 8px; border: 1px solid #eee; outline: none; font-size: 13px;">
+                </div>
+
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; font-size: 12px; font-weight: 700; color: #777; margin-bottom: 5px; text-transform: uppercase;">Meta Title</label>
+                    <input type="text" name="meta_title" value="{{ product.meta_title|default:'' }}" style="width: 100%; padding: 8px; border-radius: 8px; border: 1px solid #eee; outline: none; font-size: 13px;">
+                </div>
+
+                <div>
+                    <label style="display: block; font-size: 12px; font-weight: 700; color: #777; margin-bottom: 5px; text-transform: uppercase;">Meta Description</label>
+                    <textarea name="meta_description" rows="3" style="width: 100%; padding: 8px; border-radius: 8px; border: 1px solid #eee; outline: none; font-size: 13px; resize: none;">{{ product.meta_description|default:'' }}</textarea>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-accent" style="width: 100%; padding: 15px; justify-content: center; font-size: 16px; box-shadow: 0 10px 20px rgba(192, 138, 62, 0.2);">
+                <i class="fa-solid fa-save"></i> {% if product %}Save Changes{% else %}Create Product{% endif %}
+            </button>
+        </div>
+    </div>
+</form>
+{% endblock %}

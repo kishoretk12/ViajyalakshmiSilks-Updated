@@ -1,0 +1,117 @@
+{% extends "pages/base.html" %}
+{% load i18n %}
+{% load static %}
+
+{% block title %}Sign In Via Google | {{ site_settings.store_name }}{% endblock %}
+
+{% block content %}
+<style>
+.auth-wrapper {
+    min-height: 75vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+}
+
+.auth-card {
+    background: var(--white);
+    max-width: 480px;
+    width: 100%;
+    border-radius: var(--radius-lg);
+    padding: 45px;
+    box-shadow: var(--shadow-lg);
+    text-align: center;
+    border: 1px solid rgba(192, 138, 62, 0.15);
+    animation: fadeIn 0.6s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.auth-icon {
+    width: 64px;
+    height: 64px;
+    background: #fdf6ec;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 25px;
+    color: var(--gold);
+    font-size: 28px;
+    box-shadow: 0 4px 15px rgba(192, 138, 62, 0.1);
+}
+
+.auth-card h1 {
+    font-family: var(--font-heading);
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--primary);
+    margin-bottom: 12px;
+}
+
+.auth-card p {
+    color: var(--text-muted);
+    font-size: 15px;
+    line-height: 1.6;
+    margin-bottom: 35px;
+}
+
+.btn-continue {
+    width: 100%;
+    background: var(--primary);
+    color: var(--white);
+    padding: 14px 20px;
+    border: none;
+    border-radius: var(--radius-md);
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--transition);
+    box-shadow: 0 6px 20px rgba(59, 31, 15, 0.15);
+}
+
+.btn-continue:hover {
+    background: var(--primary-mid);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(59, 31, 15, 0.25);
+}
+
+.btn-cancel {
+    display: inline-block;
+    margin-top: 20px;
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    transition: color 0.2s;
+}
+
+.btn-cancel:hover {
+    color: var(--primary);
+}
+</style>
+
+<div class="auth-wrapper">
+    <div class="auth-card">
+        <div class="auth-icon">
+            <i class="fa-brands fa-google"></i>
+        </div>
+        
+        <h1>{% trans "Sign In Via Google" %}</h1>
+        <p>{% blocktrans with provider.name as provider_name %}You are about to sign in using your {{ provider_name }} account.{% endblocktrans %}</p>
+
+        <form method="post">
+            {% csrf_token %}
+            <button type="submit" class="btn-continue">{% trans "Continue to Sign In" %}</button>
+        </form>
+
+        <a href="{% url 'login' %}" class="btn-cancel">
+            <i class="fa-solid fa-arrow-left me-1"></i> {% trans "Cancel and go back" %}
+        </a>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,68 @@
+{% extends 'dashboard/base_dashboard.html' %}
+{% load static %}
+
+{% block title %}Coupons & Discounts{% endblock %}
+
+{% block dashboard_content %}
+<div class="header-section" style="margin-bottom: 40px; display: flex; justify-content: space-between; align-items: center;">
+    <div>
+        <h1 style="font-size: 32px; margin-bottom: 5px;">Discounts & Offers</h1>
+        <p style="color: var(--text-muted);">Create coupon codes and promotional offers.</p>
+    </div>
+    <a href="{% url 'coupon_add' %}" class="btn btn-accent" style="padding: 12px 25px;">
+        <i class="fa-solid fa-plus"></i> Create Coupon
+    </a>
+</div>
+
+<div class="content-card">
+    <div style="overflow-x: auto;">
+        <table class="premium-table">
+            <thead>
+                <tr>
+                    <th>Code</th>
+                    <th>Type</th>
+                    <th>Value</th>
+                    <th>Min. Purchase</th>
+                    <th>Expiry</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for coupon in coupons %}
+                <tr>
+                    <td data-label="Code"><strong style="color: var(--primary); letter-spacing: 1px;">{{ coupon.code }}</strong></td>
+                    <td data-label="Type">{{ coupon.get_discount_type_display }}</td>
+                    <td data-label="Value" style="font-weight: 700; color: var(--accent);">
+                        {% if coupon.discount_type == 'PERCENTAGE' %}{{ coupon.discount_value }}%{% else %}₹{{ coupon.discount_value }}{% endif %}
+                    </td>
+                    <td data-label="Min. Purchase">₹{{ coupon.min_purchase_amount }}</td>
+                    <td data-label="Expiry">{{ coupon.expiry_date|date:"d M Y" }}</td>
+                    <td data-label="Status">
+                        {% if coupon.is_expired %}
+                        <span class="status-pill status-pending">EXPIRED</span>
+                        {% else %}
+                        <span class="status-pill status-shipped">ACTIVE</span>
+                        {% endif %}
+                    </td>
+                    <td data-label="Actions">
+                        <div style="display: flex; gap: 8px;">
+                            <a href="{% url 'coupon_edit' coupon.id %}" class="btn btn-outline" style="padding: 8px; width: 35px; height: 35px; justify-content: center;">
+                                <i class="fa-solid fa-pen-to-square"></i>
+                            </a>
+                            <a href="{% url 'coupon_delete' coupon.id %}" class="btn btn-outline" style="padding: 8px; width: 35px; height: 35px; justify-content: center; color: var(--danger);" onclick="return confirm('Delete this coupon code?')">
+                                <i class="fa-solid fa-trash"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" style="text-align: center; padding: 50px; color: var(--text-muted);">No coupons created yet.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+
+        </table>
+    </div>
+</div>
+{% endblock %}

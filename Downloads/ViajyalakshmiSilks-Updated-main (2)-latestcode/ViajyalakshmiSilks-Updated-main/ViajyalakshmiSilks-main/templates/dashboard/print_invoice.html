@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Invoice #{{ site_settings.invoice_prefix }}-{{ order.id }}</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Poppins:wght@400;600;800&display=swap');
+        
+        body { font-family: 'Poppins', sans-serif; color: #333; margin: 0; padding: 40px; background: white; }
+        .invoice-box { max-width: 850px; margin: auto; border: 1px solid #eee; padding: 40px; box-shadow: 0 0 10px rgba(0,0,0,0.05); }
+        
+        .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 50px; }
+        .brand h1 { font-family: 'Playfair Display', serif; margin: 0; color: #3b1f0f; font-size: 32px; letter-spacing: 1px; }
+        .brand p { margin: 5px 0; font-size: 13px; color: #c08a3e; font-weight: 600; text-transform: uppercase; }
+        
+        .invoice-meta { text-align: right; }
+        .invoice-meta h2 { margin: 0; color: #3b1f0f; font-size: 24px; font-weight: 800; }
+        .invoice-meta p { margin: 4px 0; font-size: 14px; color: #666; }
+        
+        .details-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 50px; margin-bottom: 40px; }
+        .detail-block h3 { font-size: 12px; text-transform: uppercase; color: #c08a3e; letter-spacing: 1.5px; border-bottom: 2px solid #fdfaf5; padding-bottom: 8px; margin-bottom: 15px; font-weight: 800; }
+        .detail-block p { font-size: 14px; line-height: 1.6; margin: 0; color: #444; }
+        
+        table { width: 100%; border-collapse: collapse; margin: 30px 0; }
+        th { background: #3b1f0f; color: white; text-align: left; padding: 15px; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; }
+        td { padding: 20px 15px; border-bottom: 1px solid #f0f0f0; font-size: 15px; }
+        
+        .item-name { font-weight: 700; color: #3b1f0f; display: block; }
+        .item-desc { font-size: 12px; color: #888; margin-top: 4px; display: block; }
+        
+        .summary-container { display: flex; justify-content: flex-end; }
+        .summary-table { width: 300px; }
+        .summary-row { display: flex; justify-content: space-between; padding: 10px 0; font-size: 14px; color: #666; }
+        .summary-row.grand-total { border-top: 2px solid #3b1f0f; margin-top: 10px; padding-top: 15px; font-weight: 800; font-size: 20px; color: #3b1f0f; }
+        
+        .notes-section { margin-top: 50px; padding: 20px; background: #fdfaf5; border-radius: 10px; border-left: 4px solid #c08a3e; }
+        .notes-section h4 { margin: 0 0 10px; font-size: 13px; color: #3b1f0f; text-transform: uppercase; }
+        .notes-section p { margin: 0; font-size: 13px; color: #666; line-height: 1.5; }
+        
+        .footer { margin-top: 60px; text-align: center; border-top: 1px solid #eee; padding-top: 30px; }
+        .footer p { font-size: 12px; color: #999; margin: 5px 0; }
+        
+        @media print {
+            body { padding: 0; background: none; }
+            .invoice-box { border: none; box-shadow: none; max-width: 100%; padding: 0; }
+            .no-print { display: none; }
+        }
+    </style>
+</head>
+<body onload="window.print()">
+    <div class="invoice-box">
+        <div class="header">
+            <div class="brand">
+                <h1>{{ site_settings.store_name }}</h1>
+                <p>Heritage Excellence Since 1920</p>
+                <div style="font-size: 12px; color: #666; margin-top: 15px; line-height: 1.4;">
+                    {{ site_settings.address|linebreaksbr }}<br>
+                    Email: {{ site_settings.email }}<br>
+                    WhatsApp: {{ site_settings.whatsapp_number }}
+                </div>
+            </div>
+            <div class="invoice-meta">
+                <h2>INVOICE</h2>
+                <p><strong>#{{ site_settings.invoice_prefix }}-{{ order.id }}</strong></p>
+                <p>Date: {{ order.created_at|date:"d F Y" }}</p>
+                <p>Status: {% if order.paid %}PAID{% else %}PENDING{% endif %}</p>
+            </div>
+        </div>
+
+        <div class="details-grid">
+            <div class="detail-block">
+                <h3>Billed To</h3>
+                <p>
+                    <strong>{{ order.delivery_address.full_name|default:order.guest_name }}</strong><br>
+                    {{ order.delivery_address.address_line_1|default:order.guest_address|linebreaksbr }}<br>
+                    {% if order.delivery_address.address_line_2 %}{{ order.delivery_address.address_line_2 }}<br>{% endif %}
+                    {{ order.delivery_address.city }}{% if order.delivery_address.state %}, {{ order.delivery_address.state }}{% endif %} - {{ order.delivery_address.pincode }}<br>
+                    <strong>Phone:</strong> {{ order.delivery_address.phone|default:order.guest_phone }}
+                </p>
+            </div>
+            <div class="detail-block">
+                <h3>Payment Details</h3>
+                <p>
+                    <strong>Method:</strong> {% if order.razorpay_payment_id %}Online Payment{% else %}Cash on Delivery{% endif %}<br>
+                    <strong>Transaction ID:</strong> {{ order.razorpay_payment_id|default:"N/A" }}<br>
+                    <strong>Currency:</strong> {{ site_settings.currency_symbol }} (INR)
+                </p>
+            </div>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th style="width: 50%;">Item Description</th>
+                    <th style="text-align: center;">Qty</th>
+                    <th style="text-align: right;">Rate</th>
+                    <th style="text-align: right;">Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>
+                        <span class="item-name">{{ order.saree.name }}</span>
+                        <span class="item-desc">Premium {{ order.saree.collection.name|default:"Heritage" }} Collection Saree</span>
+                    </td>
+                    <td style="text-align: center;">{{ order.quantity }}</td>
+                    <td style="text-align: right;">{{ site_settings.currency_symbol }}{{ order.saree.price }}</td>
+                    <td style="text-align: right;">{{ site_settings.currency_symbol }}{{ order.amount }}</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="summary-container">
+            <div class="summary-table">
+                <div class="summary-row">
+                    <span>Subtotal</span>
+                    <span>{{ site_settings.currency_symbol }}{{ order.amount }}</span>
+                </div>
+                <div class="summary-row">
+                    <span>Shipping</span>
+                    <span>{{ site_settings.currency_symbol }}0.00</span>
+                </div>
+                {% if site_settings.tax_percentage > 0 %}
+                <div class="summary-row">
+                    <span>Tax ({{ site_settings.tax_percentage }}% Included)</span>
+                    <span>{{ site_settings.currency_symbol }}{{ order.amount|extract_tax:site_settings.tax_percentage }}</span>
+                </div>
+                {% endif %}
+                <div class="summary-row grand-total">
+                    <span>Grand Total</span>
+                    <span>{{ site_settings.currency_symbol }}{{ order.amount }}</span>
+                </div>
+            </div>
+        </div>
+
+        {% if site_settings.invoice_notes %}
+        <div class="notes-section">
+            <h4>Important Notes</h4>
+            <p>{{ site_settings.invoice_notes|linebreaksbr }}</p>
+        </div>
+        {% endif %}
+
+        <div class="footer">
+            <p style="font-weight: 700; color: #3b1f0f; font-size: 14px; margin-bottom: 10px;">{{ site_settings.invoice_footer }}</p>
+            <p>This is a computer-generated document. No signature is required.</p>
+            <p>&copy; {% now "Y" %} {{ site_settings.store_name }}. All Rights Reserved.</p>
+        </div>
+    </div>
+    
+    <div class="no-print" style="position: fixed; bottom: 20px; right: 20px;">
+        <button onclick="window.print()" style="background: #c08a3e; color: white; border: none; padding: 12px 25px; border-radius: 50px; font-weight: 700; cursor: pointer; box-shadow: 0 5px 15px rgba(192, 138, 62, 0.4);">
+            <i class="fa-solid fa-print"></i> Print Invoice
+        </button>
+    </div>
+</body>
+</html>

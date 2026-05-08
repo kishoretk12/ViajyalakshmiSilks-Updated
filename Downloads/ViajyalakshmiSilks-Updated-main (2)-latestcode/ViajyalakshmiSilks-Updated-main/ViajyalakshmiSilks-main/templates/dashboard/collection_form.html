@@ -1,0 +1,94 @@
+{% extends 'dashboard/base_dashboard.html' %}
+{% load static %}
+
+{% block title %}{% if collection %}Edit{% else %}Create{% endif %} Collection - Business Control Center{% endblock %}
+
+{% block dashboard_content %}
+<div class="header-section" style="margin-bottom: 30px;">
+    <a href="{% url 'dashboard_collections' %}" style="text-decoration: none; color: var(--text-muted); font-size: 14px; font-weight: 600;">
+        <i class="fa-solid fa-arrow-left"></i> Back to Collections
+    </a>
+    <h1 style="font-size: 28px; margin-top: 10px;">{% if collection %}Edit Collection{% else %}New Collection{% endif %}</h1>
+</div>
+
+<div style="max-width: 800px;">
+    <div class="content-card">
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            <div style="display: grid; grid-template-columns: 1fr; gap: 25px;">
+                <div class="form-group">
+                    <label>Collection Name</label>
+                    <input type="text" name="name" value="{{ collection.name|default:'' }}" class="form-control-premium" placeholder="e.g. Pure Zari Kanchipuram" required>
+                    <p style="font-size: 12px; color: var(--text-muted); margin-top: 5px;">A unique name for this collection.</p>
+                </div>
+
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea name="description" class="form-control-premium" rows="4" placeholder="Tell the story of this collection...">{{ collection.description|default:'' }}</textarea>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 25px;">
+                    <div class="form-group">
+                        <label>Banner Image</label>
+                        <input type="file" name="image" class="form-control-premium">
+                        {% if collection.image %}
+                            <p style="font-size: 11px; margin-top: 5px; color: var(--accent);">Current: {{ collection.image.name|truncatechars:30 }}</p>
+                        {% endif %}
+                    </div>
+                    <div class="form-group">
+                        <label>Priority (Sorting)</label>
+                        <input type="number" name="priority" value="{{ collection.priority|default:0 }}" class="form-control-premium">
+                        <p style="font-size: 12px; color: var(--text-muted); margin-top: 5px;">Higher numbers show up first.</p>
+                    </div>
+                </div>
+
+                <div style="background: #fdfaf5; padding: 20px; border-radius: 16px; border: 1px solid rgba(192, 138, 62, 0.1);">
+                    <label style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
+                        <input type="checkbox" name="show_on_home" {% if collection.show_on_home %}checked{% endif %} style="width: 20px; height: 20px; accent-color: var(--accent);">
+                        <div>
+                            <div style="font-weight: 700; color: var(--primary);">Display on Homepage</div>
+                            <div style="font-size: 12px; color: var(--text-muted);">Featured collections appear in the premium scroll on the home page.</div>
+                        </div>
+                    </label>
+                </div>
+
+                <div style="display: flex; justify-content: flex-end; gap: 15px; margin-top: 20px; padding-top: 25px; border-top: 1px solid #f0f0f0;">
+                    <a href="{% url 'dashboard_collections' %}" class="btn btn-outline" style="padding: 12px 30px;">Cancel</a>
+                    <button type="submit" class="btn btn-accent" style="padding: 12px 40px;">
+                        <i class="fa-solid fa-save"></i> Save Collection
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    .form-group label {
+        display: block;
+        font-size: 13px;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: var(--primary);
+        margin-bottom: 8px;
+        letter-spacing: 0.5px;
+    }
+    .form-control-premium {
+        width: 100%;
+        padding: 12px 16px;
+        border-radius: 12px;
+        border: 1px solid #eee;
+        background: #fafafa;
+        font-family: inherit;
+        font-size: 15px;
+        outline: none;
+        transition: all 0.3s;
+    }
+    .form-control-premium:focus {
+        border-color: var(--accent);
+        background: white;
+        box-shadow: 0 0 0 4px rgba(192, 138, 62, 0.1);
+    }
+</style>
+{% endblock %}

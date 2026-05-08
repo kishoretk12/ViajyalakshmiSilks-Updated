@@ -1,0 +1,712 @@
+{% extends 'base.html' %}
+{% load static %}
+<!-- @formatter:off -->
+
+
+{% block content %}
+
+<!-- =========================
+     FILTER / SEARCH BAR
+     ========================= -->
+<style>
+    /* --------- Filter Toggle Button --------- */
+    .filter-toggle-btn {
+        width: fit-content;
+        margin: 10px auto;
+        padding: 5px 15px;
+        background: linear-gradient(135deg, #8b4513 0%, #a0522d 50%, #cd853f 100%);
+        color: white;
+        border: none;
+        border-radius: 4px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .filter-box {
+        display: none; /* Hidden by default */
+        width: 95%;
+        max-width: 1200px;
+        margin: 0 auto 15px;
+        background: #fff;
+        border-radius: 8px;
+        padding: 10px;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.06);
+    }
+
+    .filter-box.active {
+        display: block;
+    }
+
+    .filter-box form {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .filter-box input, .filter-box select {
+        padding: 6px 10px;
+        font-size: 13px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        flex: 1;
+        min-width: 120px;
+    }
+
+    .filter-apply-btn {
+        padding: 6px 15px;
+        background: #8b4513;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+
+
+    /* Zoom modal (kept same style) */
+    .zoom-modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.9);
+        cursor: zoom-out;
+    }
+
+    .zoom-modal.active {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .zoom-content {
+        position: relative;
+        max-width: 90%;
+        max-height: 90%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .zoom-image {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+    }
+
+    .zoom-close {
+        position: absolute;
+        top: 25px;
+        right: 35px;
+        color: white;
+        font-size: 42px;
+        cursor: pointer;
+        z-index: 1010;
+        opacity: 0.7;
+        transition: opacity 0.3s;
+    }
+
+    .zoom-close:hover {
+        opacity: 1;
+    }
+
+    .zoom-arrow {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 64px;
+        height: 64px;
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        color: white;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 50%;
+        font-size: 24px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        z-index: 1010;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    }
+
+    .zoom-arrow:hover {
+        background: rgba(255, 255, 255, 0.25);
+        transform: translateY(-50%) scale(1.1);
+        border-color: rgba(255, 255, 255, 0.5);
+    }
+
+    .zoom-arrow.prev { left: 40px; }
+    .zoom-arrow.next { right: 40px; }
+
+    @media (max-width: 768px) {
+        .zoom-arrow { width: 50px; height: 50px; font-size: 18px; }
+        .zoom-arrow.prev { left: 15px; }
+        .zoom-arrow.next { right: 15px; }
+    }
+
+    .zoom-counter {
+        position: absolute;
+        bottom: 40px;
+        left: 50%;
+        transform: translateX(-50%);
+        color: white;
+        background: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        padding: 10px 24px;
+        border-radius: 40px;
+        font-family: 'Poppins', sans-serif;
+        font-size: 15px;
+        font-weight: 600;
+        letter-spacing: 1.5px;
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    }
+
+    /* small ripple helper for buy button (kept) */
+    .ripple {
+        position: absolute;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.6);
+        transform: scale(0);
+        animation: ripple 0.6s linear;
+        pointer-events: none;
+    }
+
+    @keyframes ripple {
+        to {
+            transform: scale(4);
+            opacity: 0;
+        }
+    }
+</style>
+
+<!-- ===== SHOP HERO BANNER ===== -->
+<div style="background:linear-gradient(135deg,#1a0d06 0%,#2e1208 50%,#3b1f0f 100%);padding:56px 24px 48px;text-align:center;">
+  <p style="font-size:11px;font-weight:700;letter-spacing:3px;color:#c08a3e;text-transform:uppercase;margin-bottom:12px;">Authentic Kanchipuram Silk Sarees</p>
+  <h1 style="font-family:'Playfair Display',serif;font-size:clamp(2rem,5vw,3.2rem);color:#fff;font-weight:700;font-style:italic;margin:0;">{% if site_settings.store_name %}{{ site_settings.store_name }} Collection{% else %}Our Collection{% endif %}</h1>
+</div>
+
+<!-- ===== PREMIUM FILTER BAR ===== -->
+<div class="filter-sticky-bar">
+    <div class="filter-container">
+        <!-- Mobile Filter Toggle -->
+        <button class="mobile-filter-btn" id="mobileFilterToggle">
+            <i class="fa-solid fa-sliders"></i> Filter & Search
+        </button>
+
+        <form method="GET" role="search" id="filterForm" class="filter-form">
+            <div class="search-input-wrapper">
+                <span class="search-icon">🔍</span>
+                <input type="text" name="search" placeholder="Search sarees..." value="{{ search }}" class="search-input">
+            </div>
+            
+            <div class="filter-group">
+                <select name="category" class="filter-select">
+                    <option value="">All Categories</option>
+                    {% for cat in categories %}
+                    <option value="{{ cat }}" {% if category == cat %}selected{% endif %}>{{ cat|capfirst }}</option>
+                    {% endfor %}
+                </select>
+
+                <div class="price-range-wrapper">
+                    <span>{{ site_settings.currency_symbol }}</span>
+                    <input type="number" name="min_price" placeholder="Min" value="{{ min_price }}" class="price-input">
+                    <span class="range-sep">—</span>
+                    <input type="number" name="max_price" placeholder="Max" value="{{ max_price }}" class="price-input">
+                </div>
+
+                <button type="submit" class="filter-submit-btn">
+                    <i class="fa-solid fa-check"></i> Apply
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% if collections %}
+<!-- ===== COLLECTION FILTER CHIPS ===== -->
+<div style="background:#faf6f1; border-bottom:1px solid rgba(192,138,62,0.12); padding:10px 20px; overflow-x:auto; white-space:nowrap; -webkit-overflow-scrolling:touch;">
+    <div style="display:inline-flex; gap:10px; align-items:center;">
+        <a href="/shop/{% if search %}?search={{ search }}{% endif %}"
+           style="display:inline-flex; align-items:center; padding:7px 18px; border-radius:50px; font-size:13px; font-weight:600; text-decoration:none; white-space:nowrap; transition:all 0.2s; border:1.5px solid {% if not collection_slug %}#c08a3e; background:#c08a3e; color:#fff;{% else %}rgba(192,138,62,0.4); background:transparent; color:#8b4513;{% endif %}">
+            All
+        </a>
+        {% for col in collections %}
+        <a href="/shop/?collection={{ col.slug }}{% if search %}&search={{ search }}{% endif %}{% if min_price %}&min_price={{ min_price }}{% endif %}{% if max_price %}&max_price={{ max_price }}{% endif %}"
+           style="display:inline-flex; align-items:center; padding:7px 18px; border-radius:50px; font-size:13px; font-weight:600; text-decoration:none; white-space:nowrap; transition:all 0.2s; border:1.5px solid {% if collection_slug == col.slug %}#c08a3e; background:#c08a3e; color:#fff;{% else %}rgba(192,138,62,0.4); background:transparent; color:#8b4513;{% endif %}">
+            {{ col.name }}
+        </a>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<style>
+    .filter-sticky-bar {
+        background: #fff;
+        padding: 15px 24px;
+        box-shadow: 0 4px 20px rgba(59, 31, 15, .08);
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        border-bottom: 1px solid rgba(192, 138, 62, .12);
+    }
+
+    .filter-container {
+        max-width: 1300px;
+        margin: 0 auto;
+    }
+
+    .filter-form {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+    }
+
+    .search-input-wrapper {
+        flex: 1;
+        min-width: 200px;
+        position: relative;
+    }
+
+    .search-icon {
+        position: absolute;
+        left: 14px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #c08a3e;
+    }
+
+    .search-input {
+        width: 100%;
+        padding: 11px 16px 11px 40px;
+        border: 1.5px solid rgba(192, 138, 62, .25);
+        border-radius: 50px;
+        font-family: 'Poppins', sans-serif;
+        font-size: 14px;
+        color: #3b1f0f;
+        background: #faf6f1;
+        outline: none;
+        transition: all 0.3s;
+    }
+
+    .search-input:focus {
+        border-color: var(--accent);
+        background: #fff;
+        box-shadow: 0 0 0 4px rgba(192, 138, 62, 0.1);
+    }
+
+    .filter-group {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+    }
+
+    .filter-select {
+        padding: 11px 20px;
+        border: 1.5px solid rgba(192, 138, 62, .25);
+        border-radius: 50px;
+        font-family: 'Poppins', sans-serif;
+        font-size: 14px;
+        color: #3b1f0f;
+        background: #faf6f1;
+        outline: none;
+        cursor: pointer;
+    }
+
+    .price-range-wrapper {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        border: 1.5px solid rgba(192, 138, 62, .25);
+        border-radius: 50px;
+        padding: 5px 14px;
+        background: #faf6f1;
+    }
+
+    .price-input {
+        width: 65px;
+        border: none;
+        background: transparent;
+        font-family: 'Poppins', sans-serif;
+        font-size: 13px;
+        color: #3b1f0f;
+        outline: none;
+    }
+
+    .filter-submit-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 11px 28px;
+        background: linear-gradient(135deg, #9a6b28, #c08a3e);
+        color: #fff;
+        border: none;
+        border-radius: 50px;
+        font-family: 'Poppins', sans-serif;
+        font-size: 14px;
+        font-weight: 700;
+        cursor: pointer;
+        box-shadow: 0 6px 18px rgba(192, 138, 62, .3);
+    }
+
+    .mobile-filter-btn {
+        display: none;
+        width: 100%;
+        padding: 12px;
+        background: var(--primary);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        font-weight: 600;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+    }
+
+    @media (max-width: 991px) {
+        .filter-form {
+            flex-wrap: wrap;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .mobile-filter-btn {
+            display: flex;
+        }
+
+        .filter-form {
+            display: none;
+            padding-top: 15px;
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .filter-form.active {
+            display: flex;
+        }
+
+        .filter-group {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .price-range-wrapper {
+            justify-content: space-between;
+        }
+
+        .price-input {
+            width: 40%;
+        }
+    }
+
+    /* FORCE GRID LAYOUT */
+    .products-wrapper {
+        display: grid !important;
+        grid-template-columns: repeat(3, 1fr) !important;
+        gap: 30px !important;
+        padding: 30px !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+
+    .product-card {
+        width: 100% !important;
+        min-width: 0 !important; /* Allow grid to shrink cards */
+        margin: 0 !important;
+    }
+
+    @media (max-width: 991px) {
+        .products-wrapper {
+            grid-template-columns: repeat(2, 1fr) !important;
+            gap: 20px !important;
+            padding: 20px !important;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .products-wrapper {
+            grid-template-columns: repeat(2, 1fr) !important;
+            gap: 12px !important;
+            padding: 12px !important;
+        }
+    }
+</style>
+
+<!-- Products grid -->
+<div class="products-wrapper" id="productsWrapper">
+    {% for saree in sarees %}
+    {% url 'login' as login_url %}
+    {% url 'shop' as shop_url %}
+    {% url 'buy_now' saree.slug as buy_now_url %}
+    {% include "components/card.html" with saree=saree cart_items=cart_items user=user login_url=login_url|add:"?next="|add:shop_url buy_now_url=buy_now_url %}
+    {% empty %}
+    <p style="text-align:center;width:100%;font-family:'Poppins',sans-serif;color:#7a6355;padding:60px 0;">No sarees found for your search/filter.</p>
+    {% endfor %}
+</div>
+
+<!-- Zoom modal -->
+<div class="zoom-modal" id="zoomModal" role="dialog" aria-modal="true" aria-hidden="true">
+    <span class="zoom-close" onclick="closeZoom()" aria-label="Close zoom">&times;</span>
+    <div class="zoom-content">
+        <button class="zoom-arrow prev" onclick="changeZoomImage(-1)" aria-label="Previous zoom image">
+            <i class="fa-solid fa-chevron-left"></i>
+        </button>
+        <img class="zoom-image" id="zoomImage" src="" alt="">
+        <button class="zoom-arrow next" onclick="changeZoomImage(1)" aria-label="Next zoom image">
+            <i class="fa-solid fa-chevron-right"></i>
+        </button>
+    </div>
+    <div class="zoom-counter" id="zoomCounter">1 / 1</div>
+</div>
+
+<!-- =========================
+     JS: Carousel, Zoom, Add-to-cart (AJAX)
+     ========================= -->
+<script>
+    /* Global vars */
+    let sareeImageIndices = {}; // track current index per saree
+    let currentZoomSareeId = null;
+    let currentZoomIndex = 0;
+    let zoomImages = [];
+
+    /* initialize indices */
+    function initializeSareeIndices() {
+        document.querySelectorAll('.carousel-images').forEach(carousel => {
+            const idParts = carousel.id.split('-');
+            const sareeId = idParts[idParts.length - 1];
+            sareeImageIndices[sareeId] = 0;
+            // ensure transform initial
+            carousel.style.transform = 'translateX(0%)';
+        });
+    }
+
+    /* show specific image of saree */
+    function showImage(sareeId, imageIndex) {
+        const carousel = document.getElementById(`carousel-${sareeId}`);
+        if (!carousel) return;
+        const images = carousel.querySelectorAll('.carousel-image');
+        if (!images.length) return;
+        if (imageIndex < 0) imageIndex = images.length - 1;
+        if (imageIndex >= images.length) imageIndex = 0;
+        sareeImageIndices[sareeId] = imageIndex;
+        carousel.style.transform = `translateX(-${imageIndex * 100}%)`;
+        // update dots if exist
+        const dotsContainer = carousel.parentElement.nextElementSibling;
+        if (dotsContainer && dotsContainer.querySelectorAll) {
+            const dots = dotsContainer.querySelectorAll('.carousel-dot');
+            dots.forEach((d, i) => d.classList.toggle('active', i === imageIndex));
+        }
+    }
+
+    /* next/prev arrow */
+    function changeImage(sareeId, direction) {
+        const idx = sareeImageIndices[sareeId] || 0;
+        const carousel = document.getElementById(`carousel-${sareeId}`);
+        const images = carousel ? carousel.querySelectorAll('.carousel-image') : [];
+        if (!images.length) return;
+        let newIndex = idx + direction;
+        if (newIndex < 0) newIndex = images.length - 1;
+        if (newIndex >= images.length) newIndex = 0;
+        showImage(sareeId, newIndex);
+    }
+
+    /* open zoom modal for a saree */
+    function openZoom(sareeId, imageIndex) {
+        const carousel = document.getElementById(`carousel-${sareeId}`);
+        if (!carousel) return;
+        const images = carousel.querySelectorAll('.carousel-image');
+        zoomImages = Array.from(images).map(i => i.src);
+        currentZoomSareeId = sareeId;
+        currentZoomIndex = sareeImageIndices[sareeId] || imageIndex || 0;
+        const zi = document.getElementById('zoomImage');
+        const counter = document.getElementById('zoomCounter');
+        zi.src = zoomImages[currentZoomIndex] || '';
+        counter.textContent = `${currentZoomIndex + 1} / ${zoomImages.length || 1}`;
+        const modal = document.getElementById('zoomModal');
+        modal.classList.add('active');
+        modal.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';
+    }
+
+    /* close zoom */
+    function closeZoom() {
+        const modal = document.getElementById('zoomModal');
+        modal.classList.remove('active');
+        modal.setAttribute('aria-hidden', 'true');
+        document.body.style.overflow = 'auto';
+    }
+
+    /* change zoom image */
+    function changeZoomImage(direction) {
+        if (!zoomImages.length) return;
+        currentZoomIndex += direction;
+        if (currentZoomIndex < 0) currentZoomIndex = zoomImages.length - 1;
+        if (currentZoomIndex >= zoomImages.length) currentZoomIndex = 0;
+        document.getElementById('zoomImage').src = zoomImages[currentZoomIndex];
+        document.getElementById('zoomCounter').textContent = `${currentZoomIndex + 1} / ${zoomImages.length}`;
+        if (currentZoomSareeId) showImage(currentZoomSareeId, currentZoomIndex);
+    }
+
+    /* keyboard navigation */
+    document.addEventListener('keydown', function (e) {
+        const modal = document.getElementById('zoomModal');
+        if (modal.classList.contains('active')) {
+            if (e.key === 'Escape') closeZoom();
+            else if (e.key === 'ArrowLeft') changeZoomImage(-1);
+            else if (e.key === 'ArrowRight') changeZoomImage(1);
+        }
+    });
+
+    /* close zoom when clicking outside image */
+    document.getElementById('zoomModal').addEventListener('click', function (e) {
+        if (e.target === this) closeZoom();
+    });
+
+    /* auto-rotate small carousel for each card (optional) */
+    function initAutoRotate() {
+        document.querySelectorAll('.carousel-images').forEach(carousel => {
+            const sareeId = carousel.id.split('-').pop();
+            const images = carousel.querySelectorAll('.carousel-image');
+            if (images.length > 1) {
+                let timer = setInterval(() => {
+                    const idx = sareeImageIndices[sareeId] || 0;
+                    showImage(sareeId, (idx + 1) % images.length);
+                }, 4000);
+
+                // pause on hover
+                const card = carousel.closest('.product-card');
+                if (card) {
+                    card.addEventListener('mouseenter', () => clearInterval(timer));
+                    card.addEventListener('mouseleave', () => {
+                        timer = setInterval(() => {
+                            const idx = sareeImageIndices[sareeId] || 0;
+                            showImage(sareeId, (idx + 1) % images.length);
+                        }, 4000);
+                    });
+                }
+            }
+        });
+    }
+
+    /* touch swipe support for carousels */
+    function initSwipeSupport() {
+        let touchstartX = 0;
+        let touchendX = 0;
+        
+        document.querySelectorAll('.image-carousel').forEach(carousel => {
+            const carouselImages = carousel.querySelector('.carousel-images');
+            if (!carouselImages) return;
+            const sareeId = carouselImages.id.split('-').pop();
+            
+            carousel.addEventListener('touchstart', e => {
+                touchstartX = e.changedTouches[0].screenX;
+            }, {passive: true});
+
+            carousel.addEventListener('touchend', e => {
+                touchendX = e.changedTouches[0].screenX;
+                handleSwipe(sareeId);
+            }, {passive: true});
+        });
+
+        function handleSwipe(sareeId) {
+            const threshold = 40;
+            if (touchendX < touchstartX - threshold) {
+                // swiped left
+                changeImage(sareeId, 1);
+            }
+            if (touchendX > touchstartX + threshold) {
+                // swiped right
+                changeImage(sareeId, -1);
+            }
+        }
+    }
+
+    /* DOM ready */
+    document.addEventListener('DOMContentLoaded', function () {
+        initializeSareeIndices();
+        initAutoRotate();
+        initSwipeSupport();
+
+        // Mobile filter toggle
+        const filterToggle = document.getElementById('mobileFilterToggle');
+        const filterForm = document.getElementById('filterForm');
+        if (filterToggle && filterForm) {
+            filterToggle.addEventListener('click', function() {
+                filterForm.classList.toggle('active');
+                this.innerHTML = filterForm.classList.contains('active') 
+                    ? '<i class="fa-solid fa-xmark"></i> Close Filters' 
+                    : '<i class="fa-solid fa-sliders"></i> Filter & Search';
+            });
+        }
+
+        // Add-to-cart AJAX
+        document.querySelectorAll('.add-to-cart-form').forEach(form => {
+            form.addEventListener('submit', function (ev) {
+                ev.preventDefault();
+                const button = this.querySelector('.cart-button');
+                if (!button) return;
+                const original = button.innerHTML;
+                button.classList.add('button-loading');
+                button.innerHTML = '<span class="button-icon">⏳</span> Adding...';
+                const fd = new FormData(this);
+                fetch(this.action, {
+                    method: 'POST',
+                    body: fd,
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                })
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Refresh to show quantity selector
+                            location.reload();
+                        } else {
+                            button.classList.remove('button-loading');
+                            button.innerHTML = '<span class="button-icon">❌</span> Error';
+                            setTimeout(() => button.innerHTML = original, 1500);
+                        }
+                    })
+                    .catch(err => {
+                        console.error(err);
+                        button.classList.remove('button-loading');
+                        button.innerHTML = '<span class="button-icon">❌</span> Error';
+                        setTimeout(() => button.innerHTML = original, 1500);
+                    });
+            });
+        });
+
+        // ripple for buy buttons
+        document.querySelectorAll('.buy-button').forEach(btn => {
+            btn.addEventListener('click', function (e) {
+                const ripple = document.createElement('span');
+                const rect = this.getBoundingClientRect();
+                const size = Math.max(rect.width, rect.height);
+                ripple.style.width = ripple.style.height = size + 'px';
+                const x = e.clientX - rect.left - size / 2;
+                const y = e.clientY - rect.top - size / 2;
+                ripple.style.left = x + 'px';
+                ripple.style.top = y + 'px';
+                ripple.classList.add('ripple');
+                this.appendChild(ripple);
+                setTimeout(() => ripple.remove(), 600);
+            });
+        });
+    });
+</script>
+
+{% endblock %}
+<!-- @formatter:on -->

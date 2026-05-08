@@ -1,0 +1,100 @@
+{% extends "dashboard/base_dashboard.html" %}
+{% block dashboard_content %}
+<style>
+.otp-container {
+    max-width: 500px;
+    margin: 50px auto;
+    background: white;
+    padding: 40px;
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    text-align: center;
+}
+
+.otp-title {
+    font-family: 'Playfair Display', serif;
+    color: var(--primary-color);
+    font-size: 24px;
+    margin-bottom: 10px;
+}
+
+.otp-subtitle {
+    color: var(--text-muted);
+    margin-bottom: 30px;
+    font-size: 14px;
+}
+
+.otp-input {
+    width: 100%;
+    padding: 15px;
+    font-size: 20px;
+    text-align: center;
+    letter-spacing: 5px;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    margin-bottom: 25px;
+    transition: all 0.3s ease;
+}
+
+.otp-input:focus {
+    outline: none;
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 3px rgba(192, 138, 62, 0.1);
+}
+
+.btn-verify {
+    background: linear-gradient(135deg, var(--accent-color), #a07233);
+    color: white;
+    border: none;
+    padding: 15px 30px;
+    font-size: 16px;
+    font-weight: 600;
+    border-radius: 8px;
+    cursor: pointer;
+    width: 100%;
+    transition: all 0.3s ease;
+}
+
+.btn-verify:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(192, 138, 62, 0.3);
+}
+
+.cancel-link {
+    display: inline-block;
+    margin-top: 20px;
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 14px;
+}
+
+.cancel-link:hover {
+    color: var(--primary-color);
+}
+</style>
+
+<div class="dashboard-header" style="justify-content: center; text-align: center; border-bottom: none;">
+    <h2>Security Verification</h2>
+</div>
+
+<div class="otp-container">
+    <h3 class="otp-title">Verify Identity</h3>
+    <p class="otp-subtitle">To protect your account, we've sent an OTP to your current email address ({{ request.user.email }}).</p>
+    
+    {% if messages %}
+        {% for message in messages %}
+            <div style="padding: 10px; margin-bottom: 20px; border-radius: 8px; font-size: 14px; {% if message.tags == 'error' %}background: #fee2e2; color: #991b1b;{% else %}background: #dcfce7; color: #166534;{% endif %}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+    
+    <form method="post" action="{% url 'verify_admin_changes' %}">
+        {% csrf_token %}
+        <input type="text" name="otp" class="otp-input" placeholder="Enter 6-digit OTP" required maxlength="6">
+        <button type="submit" class="btn-verify" style="background-color: #c08a3e !important; color: #ffffff !important; border: none; padding: 15px 30px; font-size: 16px; font-weight: 600; border-radius: 8px; cursor: pointer; width: 100%; display: block; box-shadow: 0 5px 15px rgba(192, 138, 62, 0.3);">Verify & Apply Changes</button>
+    </form>
+    
+    <a href="{% url 'dashboard_settings' %}" class="cancel-link">Cancel and return to settings</a>
+</div>
+{% endblock %}

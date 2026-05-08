@@ -1,0 +1,114 @@
+[
+{
+  "model": "products.saree",
+  "pk": 4,
+  "fields": {
+    "name": "Gubera Saree",
+    "price": 1050,
+    "description": "Experience elegance and comfort with our beautifully crafted Gubera Saree, designed for women who love traditional charm with a modern touch. Made from soft, lightweight fabric, this saree drapes effortlessly and is perfect for daily wear, office, small functions, and gifting.\r\n\r\n✨ Features:\r\n\r\nSoft and comfortable fabric\r\n\r\nLightweight & easy to drape\r\n\r\nBeautiful woven patterns\r\n\r\nIdeal for daily wear and festive occasions\r\n\r\nPerfect gift for loved ones\r\n\r\n🎁 What You Get:\r\n1 Gubera Saree (Unstitched blouse included)\r\n\r\nA stylish saree at an affordable price — perfect for all ages!",
+    "main_image": "sarees/WhatsApp_Image_2025-12-06_at_10.08.16_AM.jpeg",
+    "extra_image1": "sarees/WhatsApp_Image_2025-12-06_at_10.08.16_AM_1.jpeg",
+    "extra_image2": "sarees/WhatsApp_Image_2025-12-06_at_10.08.17_AM.jpeg",
+    "extra_image3": "",
+    "available": true
+  }
+},
+{
+  "model": "products.saree",
+  "pk": 5,
+  "fields": {
+    "name": "Gubera Saree",
+    "price": 1050,
+    "description": "Experience elegance and comfort with our beautifully crafted Gubera Saree, designed for women who love traditional charm with a modern touch. Made from soft, lightweight fabric, this saree drapes effortlessly and is perfect for daily wear, office, small functions, and gifting.\r\n\r\n✨ Features:\r\n\r\nSoft and comfortable fabric\r\n\r\nLightweight & easy to drape\r\n\r\nBeautiful woven patterns\r\n\r\nIdeal for daily wear and festive occasions\r\n\r\nPerfect gift for loved ones\r\n\r\n🎁 What You Get:\r\n1 Gubera Saree (Unstitched blouse included)\r\n\r\nA stylish saree at an affordable price — perfect for all ages!",
+    "main_image": "sarees/WhatsApp_Image_2025-12-06_at_10.12.24_AM.jpeg",
+    "extra_image1": "sarees/WhatsApp_Image_2025-12-06_at_10.12.24_AM_1.jpeg",
+    "extra_image2": "sarees/WhatsApp_Image_2025-12-06_at_10.12.25_AM.jpeg",
+    "extra_image3": "",
+    "available": true
+  }
+},
+{
+  "model": "products.saree",
+  "pk": 6,
+  "fields": {
+    "name": "TS",
+    "price": 2500,
+    "description": "Experience elegance and comfort with our beautifully crafted Gubera Saree, designed for women who love traditional charm with a modern touch. Made from soft, lightweight fabric, this saree drapes effortlessly and is perfect for daily wear, office, small functions, and gifting.\r\n\r\n✨ Features:\r\n\r\nSoft and comfortable fabric\r\n\r\nLightweight & easy to drape\r\n\r\nBeautiful woven patterns\r\n\r\nIdeal for daily wear and festive occasions\r\n\r\nPerfect gift for loved ones\r\n\r\n🎁 What You Get:\r\n1 Gubera Saree (Unstitched blouse included)\r\n\r\nA stylish saree at an affordable price — perfect for all ages!",
+    "main_image": "sarees/WhatsApp_Image_2025-12-06_at_4.04.15_PM.jpeg",
+    "extra_image1": "sarees/WhatsApp_Image_2025-12-06_at_4.04.27_PM.jpeg",
+    "extra_image2": "sarees/WhatsApp_Image_2025-12-06_at_4.04.47_PM.jpeg",
+    "extra_image3": "",
+    "available": true
+  }
+},
+{
+  "model": "products.saree",
+  "pk": 7,
+  "fields": {
+    "name": "TS",
+    "price": 2500,
+    "description": "Experience elegance and comfort with our beautifully crafted Gubera Saree, designed for women who love traditional charm with a modern touch. Made from soft, lightweight fabric, this saree drapes effortlessly and is perfect for daily wear, office, small functions, and gifting.\r\n\r\n✨ Features:\r\n\r\nSoft and comfortable fabric\r\n\r\nLightweight & easy to drape\r\n\r\nBeautiful woven patterns\r\n\r\nIdeal for daily wear and festive occasions\r\n\r\nPerfect gift for loved ones\r\n\r\n🎁 What You Get:\r\n1 Gubera Saree (Unstitched blouse included)\r\n\r\nA stylish saree at an affordable price — perfect for all ages!",
+    "main_image": "sarees/WhatsApp_Image_2025-12-06_at_4.03.05_PM.jpeg",
+    "extra_image1": "sarees/WhatsApp_Image_2025-12-06_at_4.03.16_PM.jpeg",
+    "extra_image2": "sarees/WhatsApp_Image_2025-12-06_at_4.03.16_PM_1.jpeg",
+    "extra_image3": "sarees/WhatsApp_Image_2025-12-06_at_4.03.26_PM.jpeg",
+    "available": true
+  }
+},
+{
+  "model": "products.saree",
+  "pk": 8,
+  "fields": {
+    "name": "LINEN COTTEN",
+    "price": 1049,
+    "description": "",
+    "main_image": "sarees/WhatsApp_Image_2025-12-08_at_2.57.04_PM.jpeg",
+    "extra_image1": "sarees/WhatsApp_Image_2025-12-08_at_2.57.04_PM_1.jpeg",
+    "extra_image2": "sarees/WhatsApp_Image_2025-12-08_at_2.57.05_PM.jpeg",
+    "extra_image3": "",
+    "available": true
+  }
+},
+{
+  "model": "products.saree",
+  "pk": 9,
+  "fields": {
+    "name": "LINEN COTTEN",
+    "price": 1049,
+    "description": "",
+    "main_image": "sarees/WhatsApp_Image_2025-12-08_at_2.57.22_PM.jpeg",
+    "extra_image1": "sarees/WhatsApp_Image_2025-12-08_at_2.57.22_PM_1.jpeg",
+    "extra_image2": "sarees/WhatsApp_Image_2025-12-08_at_2.57.22_PM_2.jpeg",
+    "extra_image3": "",
+    "available": true
+  }
+},
+{
+  "model": "products.saree",
+  "pk": 10,
+  "fields": {
+    "name": "SOFT SILK",
+    "price": 1049,
+    "description": "",
+    "main_image": "sarees/WhatsApp_Image_2025-12-09_at_1.58.15_PM.jpeg",
+    "extra_image1": "sarees/WhatsApp_Image_2025-12-09_at_1.58.16_PM.jpeg",
+    "extra_image2": "sarees/WhatsApp_Image_2025-12-09_at_1.58.16_PM_1.jpeg",
+    "extra_image3": "",
+    "available": true
+  }
+},
+{
+  "model": "products.saree",
+  "pk": 11,
+  "fields": {
+    "name": "SOFT SILK",
+    "price": 1049,
+    "description": "",
+    "main_image": "sarees/WhatsApp_Image_2025-12-09_at_2.00.12_PM.jpeg",
+    "extra_image1": "sarees/WhatsApp_Image_2025-12-09_at_2.00.12_PM_1.jpeg",
+    "extra_image2": "sarees/WhatsApp_Image_2025-12-09_at_2.00.12_PM_2.jpeg",
+    "extra_image3": "",
+    "available": true
+  }
+}
+]

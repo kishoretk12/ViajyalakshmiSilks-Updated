@@ -1,0 +1,401 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>{% block title %}{{ meta_title|default:site_settings.default_meta_title }}{% endblock %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="{% block meta_description %}{{ meta_description|default:site_settings.default_meta_description }}{% endblock %}">
+    <meta name="keywords" content="{% block meta_keywords %}{{ site_settings.default_keywords }}{% endblock %}">
+    
+    <!-- Open Graph -->
+    <meta property="og:title" content="{% block og_title %}{{ meta_title|default:site_settings.default_meta_title }}{% endblock %}">
+    <meta property="og:description" content="{% block og_description %}{{ meta_description|default:site_settings.default_meta_description }}{% endblock %}">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{{ request.build_absolute_uri }}">
+    <meta property="og:image" content="{% block og_image %}{{ request.scheme }}://{{ request.get_host }}{% static 'images/hero1.jpg' %}{% endblock %}">
+    
+    <!-- Twitter Cards -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{% block twitter_title %}{{ meta_title|default:site_settings.default_meta_title }}{% endblock %}">
+    <meta name="twitter:description" content="{% block twitter_description %}{{ meta_description|default:site_settings.default_meta_description }}{% endblock %}">
+    <meta name="twitter:image" content="{% block twitter_image %}{{ request.scheme }}://{{ request.get_host }}{% static 'images/hero1.jpg' %}{% endblock %}">
+
+    <!-- Canonical -->
+    <link rel="canonical" href="{% block canonical_url %}{{ request.build_absolute_uri }}{% endblock %}">
+
+    <!-- Breadcrumb & Custom Schema Hooks -->
+    {% block breadcrumb_schema %}{% endblock %}
+    {% block page_schema %}{% endblock %}
+
+    <!-- Structured Data (JSON-LD) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "{{ site_settings.store_name }}",
+      "url": "{{ request.scheme }}://{{ request.get_host }}",
+      "logo": "{{ request.scheme }}://{{ request.get_host }}{% if site_settings.logo %}{{ site_settings.logo.url }}{% else %}{% static 'logo.png' %}{% endif %}",
+      "description": "{{ site_settings.default_meta_description }}",
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "Kanchipuram",
+        "addressRegion": "Tamil Nadu",
+        "addressCountry": "IN"
+      },
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "telephone": "{{ site_settings.contact_phone }}",
+        "contactType": "customer service"
+      }
+    }
+    </script>
+
+    <!-- Google Fonts: Playfair Display + Poppins -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,800;0,900;1,400;1,600&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
+    <!-- Custom styles -->
+    <link rel="stylesheet" href="{% static 'style.css' %}">
+    <link rel="stylesheet" href="{% static 'styles/base.css' %}">
+
+    <style>
+        /* ===== DESIGN TOKENS ===== */
+        :root {
+            --primary:      #3b1f0f;
+            --primary-mid:  #6b3520;
+            --gold:         #c08a3e;
+            --gold-light:   #e8c47a;
+            --gold-dark:    #9a6b28;
+            --bg:           #f5efe7;
+            --bg-dark:      #1a0d06;
+            --white:        #ffffff;
+            --text-dark:    #2a1505;
+            --text-muted:   #7a6355;
+            --radius-sm:    12px;
+            --radius-md:    16px;
+            --radius-lg:    20px;
+            --shadow-sm:    0 4px 16px rgba(59,31,15,.08);
+            --shadow-md:    0 8px 30px rgba(59,31,15,.14);
+            --shadow-lg:    0 20px 60px rgba(59,31,15,.18);
+            --transition:   0.3s ease;
+            --font-heading: 'Playfair Display', Georgia, serif;
+            --font-body:    'Poppins', 'Segoe UI', sans-serif;
+        }
+
+        /* ===== RESET & BASE ===== */
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: var(--font-body);
+            background-color: var(--bg);
+            color: var(--text-dark);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ===== ANNOUNCEMENT BAR ===== */
+        .announcement-bar {
+            background: #120700;
+            color: var(--gold-light);
+            padding: 9px 0;
+            overflow: hidden;
+            position: relative;
+            z-index: 100;
+        }
+        .announcement-bar::before {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%;
+            width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent);
+            animation: ann-shimmer 4s infinite;
+        }
+        @keyframes ann-shimmer { 0%{left:-100%} 100%{left:100%} }
+        .announcement-track {
+            display: flex;
+            animation: scroll-announcement 30s linear infinite;
+            width: max-content;
+        }
+        @keyframes scroll-announcement {
+            0%   { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+        .announcement-bar:hover .announcement-track { animation-play-state: paused; }
+        .announcement-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 0 40px;
+            font-size: 12.5px;
+            font-weight: 500;
+            letter-spacing: 0.4px;
+            white-space: nowrap;
+        }
+        .ann-sep { color: var(--gold); opacity: 0.5; font-size: 10px; }
+        .ann-icon {
+            font-size: 11px;
+            width: 18px;
+            height: 18px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(232,196,122,0.15);
+            border-radius: 50%;
+            color: var(--gold-light);
+            padding: 2px;
+        }
+
+        @media (min-width: 992px) {
+            .navbar {
+                background: #241309f4 !important;
+                padding: 0 40px !important;
+                height: 68px;
+                display: flex !important;
+                justify-content: space-between !important;
+                align-items: center !important;
+                box-shadow: 0 4px 20px rgba(0,0,0,0.3) !important;
+                border-bottom: 1px solid rgba(192,138,62,0.15) !important;
+                position: sticky;
+                top: 0;
+                z-index: 1000;
+                width: 100% !important;
+                max-width: none !important;
+                margin: 0 !important;
+            }
+        }
+        .bg-side { background: #1a0a02 !important; }
+        .navbar-brand {
+            font-family: var(--font-heading) !important;
+            font-weight: 700 !important;
+            font-size: 22px !important;
+            color: var(--gold-light) !important;
+            text-decoration: none !important;
+            letter-spacing: 0.5px !important;
+            text-shadow: 1px 1px 8px rgba(0,0,0,0.4) !important;
+            transition: color var(--transition) !important;
+            white-space: nowrap;
+        }
+        .navbar-brand:hover { color: var(--white) !important; }
+
+        .navbar-nav {
+            display: flex !important;
+            list-style: none !important;
+            gap: 2px !important;
+            align-items: center !important;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+        .navbar-nav a {
+            color: rgba(255,255,255,0.88) !important;
+            text-decoration: none !important;
+            padding: 8px 14px !important;
+            border-radius: 8px !important;
+            font-family: 'Playfair Display', Georgia, serif !important;
+            font-weight: 600 !important;
+            font-size: 14px !important;
+            font-style: normal !important;
+            transition: all var(--transition) !important;
+            white-space: nowrap !important;
+            letter-spacing: 0.3px !important;
+            position: relative !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 6px !important;
+        }
+        .navbar-nav a .nav-icon {
+            font-size: 12px;
+            opacity: 0.8;
+            transition: opacity 0.2s;
+        }
+        .navbar-nav a:hover .nav-icon { opacity: 1; }
+        .navbar-nav a::after {
+            content: '';
+            position: absolute;
+            bottom: 4px; left: 14px; right: 14px;
+            height: 2px;
+            background: var(--gold);
+            border-radius: 2px;
+            transform: scaleX(0);
+            transition: transform var(--transition);
+        }
+        .navbar-nav a:hover {
+            color: var(--gold-light) !important;
+            background: rgba(255,255,255,0.08) !important;
+        }
+        .navbar-nav a:hover::after { transform: scaleX(1); }
+
+        @media (min-width: 992px) {
+            .navbar-collapse { display: flex !important; flex-grow: 1; align-items: center; justify-content: flex-end; }
+        }
+
+        /* Cart badge */
+        .cart-count {
+            background: linear-gradient(135deg, var(--gold), var(--gold-dark)) !important;
+            color: var(--white) !important;
+            border-radius: 20px !important;
+            padding: 2px 7px !important;
+            font-size: 11px !important;
+            font-weight: 700 !important;
+            margin-left: 4px !important;
+        }
+
+        /* ===== FLOATING SOCIALS ===== */
+        .floating-socials {
+            position: fixed;
+            right: 20px; bottom: 20px;
+            z-index: 99999;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            align-items: center;
+        }
+        .floating-socials a {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 56px; height: 56px;
+            border-radius: 50%;
+            overflow: hidden;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.22);
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+            position: relative;
+        }
+        .floating-socials a img {
+            width: 100%; height: 100%;
+            object-fit: cover; display: block;
+        }
+        .floating-socials a:hover {
+            transform: translateY(-5px) scale(1.06);
+            box-shadow: 0 12px 30px rgba(0,0,0,0.28);
+        }
+        .floating-whatsapp { background: #25D366; }
+        .floating-instagram {
+            background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285AEB 90%);
+        }
+
+        /* ===== MOBILE NAVBAR ===== */
+        @media (max-width: 768px) {
+            .announcement-bar { padding: 6px 0; }
+            .announcement-item { font-size: 10px; }
+            .ann-icon { width: 14px; height: 14px; font-size: 8px; }
+
+            .ann-icon { width: 14px; height: 14px; font-size: 8px; }
+        }
+
+        @media (max-width: 480px) {
+            .announcement-bar { font-size: 11px; padding: 7px 0; }
+            .floating-socials { right: 14px; bottom: 14px; gap: 10px; }
+            .floating-socials a { width: 50px; height: 50px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ===== ANNOUNCEMENT BAR ===== -->
+    <div class="announcement-bar" aria-label="Promotions">
+        <div class="announcement-track">
+            <!-- First copy -->
+            <span class="announcement-item"><i class="fa-solid fa-gem ann-icon"></i> Handpicked Kanchipuram Silks</span>
+            <span class="ann-sep">✦</span>
+            <span class="announcement-item"><i class="fa-solid fa-star ann-icon"></i> 500+ Happy Customers</span>
+            <span class="ann-sep">✦</span>
+            <span class="announcement-item"><i class="fa-solid fa-shield-halved ann-icon"></i> Authentic &amp; Pure Silk</span>
+            <span class="ann-sep">✦</span>
+            <span class="announcement-item"><i class="fa-brands fa-whatsapp ann-icon"></i> WhatsApp Support: {{ site_settings.whatsapp_number }}</span>
+            <span class="ann-sep">✦</span>
+            {% if site_settings.free_delivery_all_orders %}
+            <span class="announcement-item"><i class="fa-solid fa-truck-fast ann-icon"></i> Free Shipping on All Orders!</span>
+            <span class="ann-sep">✦</span>
+            {% elif site_settings.enable_free_delivery %}
+            <span class="announcement-item"><i class="fa-solid fa-truck-fast ann-icon"></i> Free Shipping Above {{ site_settings.currency_symbol }}{{ site_settings.free_delivery_min }}</span>
+            <span class="ann-sep">✦</span>
+            {% endif %}
+            <span class="announcement-item"><i class="fa-solid fa-award ann-icon"></i> Direct from Kanchipuram Weavers</span>
+            <span class="ann-sep">✦</span>
+            <!-- Duplicate for seamless loop -->
+            <span class="announcement-item"><i class="fa-solid fa-gem ann-icon"></i> Handpicked Kanchipuram Silks</span>
+            <span class="ann-sep">✦</span>
+            <span class="announcement-item"><i class="fa-solid fa-star ann-icon"></i> 500+ Happy Customers</span>
+            <span class="ann-sep">✦</span>
+            <span class="announcement-item"><i class="fa-solid fa-shield-halved ann-icon"></i> Authentic &amp; Pure Silk</span>
+            <span class="ann-sep">✦</span>
+            <span class="announcement-item"><i class="fa-brands fa-whatsapp ann-icon"></i> WhatsApp Support: {{ site_settings.whatsapp_number }}</span>
+            <span class="ann-sep">✦</span>
+            {% if site_settings.free_delivery_all_orders %}
+            <span class="announcement-item"><i class="fa-solid fa-truck-fast ann-icon"></i> Free Shipping on All Orders!</span>
+            <span class="ann-sep">✦</span>
+            {% elif site_settings.enable_free_delivery %}
+            <span class="announcement-item"><i class="fa-solid fa-truck-fast ann-icon"></i> Free Shipping Above {{ site_settings.currency_symbol }}{{ site_settings.free_delivery_min }}</span>
+            <span class="ann-sep">✦</span>
+            {% endif %}
+            <span class="announcement-item"><i class="fa-solid fa-award ann-icon"></i> Direct from Kanchipuram Weavers</span>
+            <span class="ann-sep">✦</span>
+        </div>
+    </div>
+
+    {% include "components/navbar.html" %}
+
+
+
+    <main style="margin:0;padding:0;width:100%;">{% block content %}{% endblock %}</main>
+
+    {% include "components/footer.html" %}
+    {% include "sections/floating_socials.html" %}
+    
+    <!-- Floating Cart on Mobile (Left Corner) -->
+    <a href="/cart/" id="floating-mobile-cart" class="d-lg-none" style="position: fixed; left: 20px; bottom: 20px; background: linear-gradient(135deg, var(--gold), var(--gold-dark)); color: #fff; width: 56px; height: 56px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 20px rgba(59,31,15,0.35); z-index: 99999; text-decoration: none; transition: all 0.3s ease; border: 2px solid rgba(255,255,255,0.2);">
+        <i class="fa-solid fa-bag-shopping" style="font-size: 20px;"></i>
+        {% if cart_total_items > 0 %}
+        <span style="position: absolute; top: -5px; right: -5px; background: #d63031; color: #fff; font-size: 11px; font-weight: 700; border-radius: 50%; padding: 3px 7px; border: 2px solid #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">{{ cart_total_items }}</span>
+        {% endif %}
+    </a>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+    
+    <script>
+        // Global Cart Quantity Update
+        function updateCartQty(itemId, action, sareeId) {
+            fetch('{% url "update_cart_quantity" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({ item_id: itemId, action: action })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    if (data.removed) {
+                        location.reload();
+                        return;
+                    }
+                    
+                    // Update all matching quantity spans (useful for shop + details if open)
+                    const qtySpans = document.querySelectorAll(`[id="qty-${sareeId}"]`);
+                    qtySpans.forEach(span => {
+                        span.innerText = data.item_quantity;
+                        span.style.transform = 'scale(1.2)';
+                        setTimeout(() => span.style.transform = 'scale(1)', 200);
+                    });
+                    
+                    const cartCounts = document.querySelectorAll('.cart-count');
+                    cartCounts.forEach(count => {
+                        count.textContent = data.cart_total_items;
+                        count.style.display = data.cart_total_items > 0 ? 'inline-block' : 'none';
+                    });
+                }
+            })
+            .catch(err => console.error('Cart error:', err));
+        }
+    </script>
+</body>
+</html>

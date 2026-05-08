@@ -1,0 +1,98 @@
+{% load static custom_filters %}
+{% url 'login' as login_url %}
+{% url 'shop' as shop_url %}
+<div class="product-card" role="article" aria-label="{{ saree.name }}">
+
+    <!-- Authentic Silk Badge & Marketing Tags -->
+    <div class="product-card-badge" style="display: flex; flex-direction: column; gap: 5px; align-items: flex-start;">
+        {% if saree.is_authentic_silk %}
+        <span class="badge-silk">✦ Authentic Silk</span>
+        {% endif %}
+        {% if saree.is_best_seller %}
+        <span class="badge-silk" style="background: rgba(192, 138, 62, 0.9) !important; color: #ffffff !important; border: 1px solid #c08a3e; font-weight: 700; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; padding: 4px 10px;">🔥 BEST SELLER</span>
+        {% endif %}
+        {% if saree.is_new_arrival %}
+        <span class="badge-silk" style="background: #6b3520 !important; color: #ffffff !important; border: 1px solid #c08a3e; font-weight: 700; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; padding: 4px 10px;">✨ NEW ARRIVAL</span>
+        {% endif %}
+    </div>
+
+    <!-- Image Carousel -->
+    <div class="image-carousel" onclick="location.href='{% url 'product_detail' saree.slug %}'" title="Click to view details" style="cursor: pointer;">
+        <div class="carousel-images" id="carousel-{{ saree.id }}">
+            {% for image in saree.get_all_images %}
+            <img src="{{ image.url }}" alt="{{ saree.name }}" class="carousel-image" data-zoom-src="{{ image.url }}" loading="lazy">
+            {% endfor %}
+            {% if saree.get_all_images|length == 0 %}
+            <img src="{% static 'placeholder.png' %}" alt="No image available" class="carousel-image">
+            {% endif %}
+        </div>
+
+        {% if saree.get_all_images|length > 1 %}
+        <button class="carousel-arrow prev" onclick="event.stopPropagation(); changeImage('{{ saree.id }}', -1)"
+            aria-label="Previous image">
+            <i class="fa-solid fa-chevron-left"></i>
+        </button>
+        <button class="carousel-arrow next" onclick="event.stopPropagation(); changeImage('{{ saree.id }}', 1)"
+            aria-label="Next image">
+            <i class="fa-solid fa-chevron-right"></i>
+        </button>
+        {% endif %}
+    </div>
+
+    {% if saree.get_all_images|length > 1 %}
+    <div class="carousel-dots" aria-hidden="true">
+        {% for image in saree.get_all_images %}
+        <div class="carousel-dot {% if forloop.first %}active{% endif %}"
+            onclick="showImage('{{ saree.id }}', {{ forloop.counter0 }})"></div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Product Info -->
+    <div class="product-info">
+        <a href="{% url 'product_detail' saree.slug %}" style="text-decoration: none; color: inherit; display: block;">
+            <h3 class="product-name">{{ saree.name }}</h3>
+            <div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 6px;">
+                <span class="product-price" style="margin-bottom: 0;">{{ site_settings.currency_symbol }}{{ saree.price }}</span>
+                {% if saree.mrp and saree.mrp > saree.price %}
+                    <span style="font-size: 13px; color: #999; text-decoration: line-through; font-family: var(--font-heading);">{{ site_settings.currency_symbol }}{{ saree.mrp }}</span>
+                    <span style="font-size: 11px; background: #e8f5e9; color: #2e7d32; padding: 2px 6px; border-radius: 4px; font-weight: 700;">{{ saree.get_discount_percent }}% OFF</span>
+                {% endif %}
+            </div>
+
+            <p class="product-desc">
+                {% if saree.description %}
+                {{ saree.description|truncatewords:12 }}
+                {% else %}
+                Premium {{ saree.name }} — Pure Kanchipuram silk, high-quality fabric
+                {% endif %}
+            </p>
+        </a>
+
+        <div class="product-buttons">
+            {% if user.is_authenticated %}
+                {% with cart_info=cart_items_map|get_item:saree.id %}
+                    {% if cart_info %}
+                        <div class="qty-selector-container">
+                            <div class="qty-selector">
+                                <button type="button" class="qty-btn minus" onclick="updateCartQty('{{ cart_info.id }}', 'decrease', '{{ saree.id }}')">&minus;</button>
+                                <span class="qty-val" id="qty-{{ saree.id }}">{{ cart_info.quantity }}</span>
+                                <button type="button" class="qty-btn plus" onclick="updateCartQty('{{ cart_info.id }}', 'increase', '{{ saree.id }}')">+</button>
+                            </div>
+                        </div>
+                    {% else %}
+                        <form method="post" action="{% url 'add_to_cart' saree.slug %}" class="add-to-cart-form" style="display:inline;flex:1;">
+                            {% csrf_token %}
+                            {% include "components/button.html" with element="button" type="submit" class_name="cart-button" text="Add Cart" icon="🛒" %}
+                        </form>
+                    {% endif %}
+                {% endwith %}
+            {% else %}
+            {% include "components/button.html" with element="a" href=login_url|add:"?next="|add:shop_url class_name="cart-button" text="Add Cart" icon="🛒" %}
+            {% endif %}
+
+            {% url 'buy_now' saree.slug as buy_now_url %}
+            {% include "components/button.html" with element="a" href=buy_now_url class_name="buy-button" text="Buy Now" icon="⚡" %}
+        </div>
+    </div>
+</div>

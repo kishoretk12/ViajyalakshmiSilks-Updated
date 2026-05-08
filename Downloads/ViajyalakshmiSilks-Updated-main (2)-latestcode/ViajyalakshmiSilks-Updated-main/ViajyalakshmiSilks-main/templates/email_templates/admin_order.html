@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333333; line-height: 1.6; margin: 0; padding: 0; background-color: #f9f6f0; }
+        .container { max-width: 600px; margin: 30px auto; background: #ffffff; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); border: 1px solid #eee; overflow: hidden; }
+        .header { background-color: #1a0f00; padding: 30px; text-align: center; border-bottom: 4px solid #c08a3e; }
+        .header h1 { color: #c08a3e; font-family: 'Playfair Display', serif; margin: 0; font-size: 24px; letter-spacing: 1px; }
+        .content { padding: 30px; }
+        .order-summary { border: 1px solid #f0f0f0; border-radius: 8px; margin-top: 25px; overflow: hidden; }
+        .summary-header { background-color: #fafafa; padding: 15px; font-weight: bold; border-bottom: 1px solid #f0f0f0; }
+        .summary-row { display: flex; justify-content: space-between; padding: 15px; border-bottom: 1px solid #f0f0f0; }
+        .summary-row:last-child { border-bottom: none; }
+        .total-row { background-color: #fdfaf5; font-weight: bold; font-size: 18px; color: #1a0f00; }
+        .shipping-address { margin-top: 25px; padding: 20px; background: #fdfaf5; border-radius: 8px; border: 1px dashed #c08a3e; }
+        .shipping-address h3 { color: #1a0f00; margin-top: 0; margin-bottom: 10px; }
+        .footer { text-align: center; padding: 20px; font-size: 12px; color: #888888; background-color: #fafafa; border-top: 1px solid #f0f0f0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Vijayalakshmi Silks - Admin Notification</h1>
+        </div>
+        <div class="content">
+            <p>A new order has been received successfully. Below are the order specifics:</p>
+            
+            <div class="order-summary">
+                <div class="summary-header">Order ID: #{{ order_id }}</div>
+                {% for item in items %}
+                <div class="summary-row">
+                    <span>{{ item.name }} (x{{ item.qty }})</span>
+                    <span>₹{{ item.price }}</span>
+                </div>
+                {% endfor %}
+                <div class="summary-row total-row">
+                    <span>Overall Order Total</span>
+                    <span>₹{{ total }}</span>
+                </div>
+            </div>
+            
+            <div class="shipping-address">
+                <h3>Shipping Target Address</h3>
+                <p style="margin:0;">
+                    <strong>{{ full_name }}</strong><br>
+                    {{ address_line_1 }}<br>
+                    {% if address_line_2 %}{{ address_line_2 }}<br>{% endif %}
+                    {{ city }}, {{ state }} - {{ pincode }}<br>
+                    Phone: {{ phone }}
+                </p>
+            </div>
+        </div>
+        <div class="footer">
+            Vijayalakshmi Silks Portal Updates.
+        </div>
+    </div>
+</body>
+</html>

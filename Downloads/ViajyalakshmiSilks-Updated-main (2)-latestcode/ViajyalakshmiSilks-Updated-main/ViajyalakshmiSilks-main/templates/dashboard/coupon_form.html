@@ -1,0 +1,77 @@
+{% extends 'dashboard/base_dashboard.html' %}
+{% load static %}
+
+{% block title %}{% if coupon %}Edit Coupon: {{ coupon.code }}{% else %}New Coupon Configuration{% endif %}{% endblock %}
+
+{% block dashboard_content %}
+<div class="header-section" style="margin-bottom: 40px;">
+    <a href="{% url 'dashboard_coupons' %}" style="text-decoration: none; color: var(--text-muted); font-size: 14px; font-weight: 600;">
+        <i class="fa-solid fa-arrow-left"></i> Back to Coupons
+    </a>
+    <h1 style="font-size: 32px; margin-top: 10px;">{% if coupon %}Edit Coupon{% else %}Generate New Coupon{% endif %}</h1>
+    <p style="color: var(--text-muted); margin-top: 5px;">Configure promotional rules and discount thresholds.</p>
+</div>
+
+<div style="max-width: 800px;">
+    <form method="POST">
+        {% csrf_token %}
+        <div class="content-card" style="padding: 40px;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 30px;">
+                <!-- Code Section -->
+                <div style="grid-column: span 2;">
+                    <label style="display: block; font-size: 14px; font-weight: 700; color: var(--text-dark); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Coupon Code</label>
+                    <input type="text" name="code" value="{{ coupon.code|default:'' }}" placeholder="e.g. FESTIVE2026" required
+                           style="width: 100%; padding: 15px; border-radius: 12px; border: 2px solid #eee; outline: none; font-size: 18px; font-weight: 800; color: var(--accent-gold); text-transform: uppercase; transition: border-color 0.3s;"
+                           onfocus="this.style.borderColor='var(--accent-gold)'" onblur="this.style.borderColor='#eee'">
+                </div>
+
+                <!-- Type & Value -->
+                <div>
+                    <label style="display: block; font-size: 14px; font-weight: 700; color: var(--text-dark); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Discount Type</label>
+                    <select name="discount_type" required style="width: 100%; padding: 15px; border-radius: 12px; border: 2px solid #eee; outline: none; font-size: 15px; background: white;">
+                        <option value="PERCENTAGE" {% if coupon.discount_type == 'PERCENTAGE' %}selected{% endif %}>Percentage (%)</option>
+                        <option value="FIXED" {% if coupon.discount_type == 'FIXED' %}selected{% endif %}>Fixed Amount (₹)</option>
+                    </select>
+                </div>
+                <div>
+                    <label style="display: block; font-size: 14px; font-weight: 700; color: var(--text-dark); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Discount Value</label>
+                    <input type="number" name="value" value="{{ coupon.discount_value|default:'' }}" placeholder="e.g. 10" required
+                           style="width: 100%; padding: 15px; border-radius: 12px; border: 2px solid #eee; outline: none; font-size: 15px;">
+                </div>
+
+                <!-- Limits -->
+                <div>
+                    <label style="display: block; font-size: 14px; font-weight: 700; color: var(--text-dark); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Min. Purchase (₹)</label>
+                    <input type="number" name="min_purchase" value="{{ coupon.min_purchase_amount|default:'0' }}" required
+                           style="width: 100%; padding: 15px; border-radius: 12px; border: 2px solid #eee; outline: none; font-size: 15px;">
+                </div>
+                <div>
+                    <label style="display: block; font-size: 14px; font-weight: 700; color: var(--text-dark); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Expiry Date & Time</label>
+                    <input type="datetime-local" name="expiry" value="{{ coupon.expiry_date|date:'Y-m-d\TH:i' }}" required
+                           style="width: 100%; padding: 15px; border-radius: 12px; border: 2px solid #eee; outline: none; font-size: 15px;">
+                </div>
+
+                <!-- Status Toggle (only for edit) -->
+                {% if coupon %}
+                <div style="grid-column: span 2; padding-top: 10px;">
+                    <label style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
+                        <input type="checkbox" name="active" {% if coupon.active %}checked{% endif %} style="width: 20px; height: 20px; accent-color: var(--accent-gold);">
+                        <span style="font-size: 16px; font-weight: 600;">Coupon is Active & Live</span>
+                    </label>
+                </div>
+                {% endif %}
+            </div>
+
+            <div style="display: flex; gap: 15px; margin-top: 20px;">
+                <button type="submit" class="btn btn-accent" style="flex: 2; justify-content: center; padding: 18px; font-size: 16px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 10px 20px rgba(192, 138, 62, 0.2);">
+                    <i class="fa-solid fa-bolt"></i> {% if coupon %}Update Coupon{% else %}Generate Coupon{% endif %}
+                </button>
+                <a href="{% url 'dashboard_coupons' %}" style="flex: 1; text-decoration: none; display: flex; align-items: center; justify-content: center; background: #f8f9fa; color: #666; border-radius: 12px; font-weight: 600; transition: all 0.3s;">
+                    Cancel
+                </a>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}
+

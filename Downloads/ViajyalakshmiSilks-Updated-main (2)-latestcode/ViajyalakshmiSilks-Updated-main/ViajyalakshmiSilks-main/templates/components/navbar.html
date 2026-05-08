@@ -1,0 +1,111 @@
+<!-- ===== PREMIUM NAVBAR ===== -->
+<!-- DESKTOP NAVBAR -->
+<nav class="bg-side navbar navbar-expand-lg d-none d-lg-flex" id="main-navbar" style="padding: 0 40px !important; height: 68px; background: #241309f4 !important; border-bottom: 1px solid rgba(192,138,62,0.15);">
+    <div class="container-fluid" style="padding:0; align-items: center; display: flex; justify-content: space-between; width: 100%;">
+        <a class="navbar-brand" href="/" aria-label="{{ site_settings.store_name }} Home">
+            {% if site_settings.logo %}
+            <img src="{{ site_settings.logo.url }}" alt="{{ site_settings.store_name }}" style="height:40px; width:auto; margin-right:10px;">
+            {% else %}
+            {{ site_settings.store_name|default:"Vijayalakshmi Silks" }}
+            {% endif %}
+        </a>
+
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <div class="navbar-nav ms-auto">
+            <a href="/" id="nav-home">
+                <i class="fa-solid fa-house nav-icon"></i> Home
+            </a>
+            <a href="/shop/" id="nav-shop">
+                <i class="fa-solid fa-store nav-icon"></i> Shop
+            </a>
+            <a href="/cart/" id="nav-cart">
+                <i class="fa-solid fa-bag-shopping nav-icon"></i> Cart
+                {% if user.is_authenticated and cart_total_items > 0 %}
+                <span class="cart-count" id="cart-count">{{ cart_total_items }}</span>
+                {% endif %}
+            </a>
+            {% if user.is_authenticated %}
+            <a href="/profile/" id="nav-profile">
+                <i class="fa-regular fa-user nav-icon"></i> {{ user.get_full_name|default:user.username }}
+            </a>
+            <a href="/address/manage/" id="nav-addresses">
+                <i class="fa-solid fa-location-dot nav-icon"></i> Addresses
+            </a>
+            {% if user.is_staff %}
+            <a href="{% url 'dashboard_home' %}" id="nav-admin">
+                <i class="fa-solid fa-chart-line nav-icon"></i> Dashboard
+            </a>
+            {% endif %}
+            <a href="/logout/" id="nav-logout">
+                <i class="fa-solid fa-right-from-bracket nav-icon"></i> Logout
+            </a>
+            {% else %}
+            <a href="/login/" id="nav-login">
+                <i class="fa-solid fa-right-to-bracket nav-icon"></i> Login
+            </a>
+            <a href="/signup/" id="nav-signup" style="background:rgba(192,138,62,0.2);border:1px solid rgba(192,138,62,0.35);">
+                <i class="fa-solid fa-user-plus nav-icon"></i> Sign Up
+            </a>
+            {% endif %}
+        </div>
+        </div>
+    </div>
+</nav>
+
+<!-- MOBILE NAVBAR -->
+<div class="d-lg-none" style="background: #1a0d06; width: 100%; padding: 15px 15px 10px; border-bottom: 1px solid rgba(192,138,62,0.2); z-index: 1000; position: sticky; top: 0;">
+    <!-- Top row: Cart (Left) | Logo (Center) | Space (Right) -->
+    <div style="display: flex; align-items: center; justify-content: space-between; width: 100%; margin-bottom: 15px;">
+        <!-- Left: Spacer to balance layout -->
+        <div style="width: 40px;"></div>
+
+        <!-- Center: Logo / Store Name -->
+        <a href="/" style="text-decoration: none; display: flex; justify-content: center; align-items: center; flex: 1;">
+            {% if site_settings.logo %}
+            <img src="{{ site_settings.logo.url }}" alt="{{ site_settings.store_name }}" style="height: 38px; width: auto; max-width: 180px; object-fit: contain;">
+            {% else %}
+            <span style="font-family: var(--font-heading); font-weight: 700; font-size: 22px; color: var(--gold-light); letter-spacing: 0.5px;">{{ site_settings.store_name|default:"Vijayalakshmi Silks" }}</span>
+            {% endif %}
+        </a>
+
+        <!-- Right: Spacer to balance layout -->
+        <div style="width: 40px;"></div>
+    </div>
+
+    <!-- Bottom row: Open Options Grid -->
+    <div style="display: grid; grid-template-columns: repeat({% if user.is_authenticated %}{% if user.is_staff %}5{% else %}4{% endif %}{% else %}4{% endif %}, 1fr); gap: 8px; width: 100%;">
+        <a href="/" style="display: flex; flex-direction: column; align-items: center; gap: 4px; color: rgba(255,255,255,0.9); font-size: 11px; font-weight: 600; text-decoration: none; padding: 8px 5px; background: rgba(255,255,255,0.05); border: 1px solid rgba(192,138,62,0.2); border-radius: 12px; transition: all 0.3s ease;">
+            <i class="fa-solid fa-house" style="color: var(--gold-light); font-size: 15px;"></i>
+            <span>Home</span>
+        </a>
+        <a href="/shop/" style="display: flex; flex-direction: column; align-items: center; gap: 4px; color: rgba(255,255,255,0.9); font-size: 11px; font-weight: 600; text-decoration: none; padding: 8px 5px; background: rgba(255,255,255,0.05); border: 1px solid rgba(192,138,62,0.2); border-radius: 12px; transition: all 0.3s ease;">
+            <i class="fa-solid fa-store" style="color: var(--gold-light); font-size: 15px;"></i>
+            <span>Shop</span>
+        </a>
+        {% if user.is_authenticated %}
+        <a href="/profile/" style="display: flex; flex-direction: column; align-items: center; gap: 4px; color: rgba(255,255,255,0.9); font-size: 11px; font-weight: 600; text-decoration: none; padding: 8px 5px; background: rgba(255,255,255,0.05); border: 1px solid rgba(192,138,62,0.2); border-radius: 12px; transition: all 0.3s ease;">
+            <i class="fa-regular fa-user" style="color: var(--gold-light); font-size: 15px;"></i>
+            <span>Account</span>
+        </a>
+        {% if user.is_staff %}
+        <a href="{% url 'dashboard_home' %}" style="display: flex; flex-direction: column; align-items: center; gap: 4px; color: rgba(255,255,255,0.9); font-size: 11px; font-weight: 600; text-decoration: none; padding: 8px 5px; background: rgba(255,255,255,0.05); border: 1px solid rgba(192,138,62,0.2); border-radius: 12px; transition: all 0.3s ease;">
+            <i class="fa-solid fa-chart-line" style="color: var(--gold-light); font-size: 15px;"></i>
+            <span>Admin</span>
+        </a>
+        {% endif %}
+        <a href="/logout/" style="display: flex; flex-direction: column; align-items: center; gap: 4px; color: rgba(255,255,255,0.9); font-size: 11px; font-weight: 600; text-decoration: none; padding: 8px 5px; background: rgba(255,255,255,0.05); border: 1px solid rgba(192,138,62,0.2); border-radius: 12px; transition: all 0.3s ease;">
+            <i class="fa-solid fa-right-from-bracket" style="color: var(--gold-light); font-size: 15px;"></i>
+            <span>Logout</span>
+        </a>
+        {% else %}
+        <a href="/login/" style="display: flex; flex-direction: column; align-items: center; gap: 4px; color: rgba(255,255,255,0.9); font-size: 11px; font-weight: 600; text-decoration: none; padding: 8px 5px; background: rgba(255,255,255,0.05); border: 1px solid rgba(192,138,62,0.2); border-radius: 12px; transition: all 0.3s ease;">
+            <i class="fa-solid fa-right-to-bracket" style="color: var(--gold-light); font-size: 15px;"></i>
+            <span>Login</span>
+        </a>
+        <a href="/signup/" style="display: flex; flex-direction: column; align-items: center; gap: 4px; color: #fff; font-size: 11px; font-weight: 600; text-decoration: none; padding: 8px 5px; background: rgba(192,138,62,0.25); border: 1px solid var(--gold); border-radius: 12px; transition: all 0.3s ease;">
+            <i class="fa-solid fa-user-plus" style="color: #fff; font-size: 15px;"></i>
+            <span>Join</span>
+        </a>
+        {% endif %}
+    </div>
+</div>

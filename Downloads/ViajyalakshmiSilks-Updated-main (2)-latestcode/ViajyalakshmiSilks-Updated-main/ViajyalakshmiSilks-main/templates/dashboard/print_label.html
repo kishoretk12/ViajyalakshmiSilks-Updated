@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Shipping Label #{{ site_settings.invoice_prefix }}-{{ order.id }}</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Libre+Barcode+128&family=Poppins:wght@400;600;700;900&display=swap');
+        
+        body { font-family: 'Poppins', sans-serif; margin: 0; padding: 0; background: #f4f4f4; }
+        
+        /* Label Size: 4x6 inches (standard for thermal printers) */
+        .label-container { 
+            width: 384px; 
+            min-height: 576px; 
+            background: white; 
+            margin: 20px auto; 
+            border: 2px solid black; 
+            padding: 20px; 
+            box-sizing: border-box; 
+            display: flex; 
+            flex-direction: column;
+            position: relative;
+            overflow: visible;
+        }
+
+        .label-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 3px solid black;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+
+        .sender-info { font-size: 10px; line-height: 1.2; }
+        .sender-info strong { font-size: 14px; display: block; margin-bottom: 2px; }
+
+        .order-meta { text-align: right; }
+        .order-meta .order-id { font-size: 16px; font-weight: 900; display: block; }
+        .order-meta .date { font-size: 10px; }
+
+        .ship-to-label {
+            background: black;
+            color: white;
+            padding: 4px 10px;
+            font-size: 12px;
+            font-weight: 900;
+            display: inline-block;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+
+        .recipient-info { flex-grow: 1; }
+        .recipient-info h1 { font-size: 26px; margin: 0 0 10px; font-weight: 900; text-transform: uppercase; line-height: 1; }
+        .recipient-info p { font-size: 16px; margin: 5px 0; font-weight: 600; line-height: 1.3; }
+        
+        .pincode-box {
+            border: 4px solid black;
+            padding: 10px 15px;
+            display: inline-block;
+            margin-top: 15px;
+            font-size: 32px;
+            font-weight: 900;
+            letter-spacing: 2px;
+        }
+
+        .logistics-strip {
+            border-top: 2px dashed black;
+            border-bottom: 2px dashed black;
+            margin: 15px 0;
+            padding: 10px 0;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .logistics-item { font-size: 11px; }
+        .logistics-item strong { display: block; font-size: 14px; text-transform: uppercase; }
+
+        .barcode-section {
+            text-align: center;
+            padding-top: 10px;
+        }
+
+        .barcode-font {
+            font-family: 'Libre Barcode 128', cursive;
+            font-size: 70px;
+            margin: 0;
+            line-height: 1;
+        }
+
+
+        @media print {
+            body { background: none; }
+            .label-container { margin: 0; border: none; }
+            .no-print { display: none; }
+        }
+    </style>
+</head>
+<body onload="window.print()">
+    <div class="label-container">
+        <div class="label-header">
+            <div class="sender-info">
+                <strong>{{ site_settings.store_name|upper }}</strong>
+                {{ site_settings.address|truncatechars:100 }}<br>
+                TEL: {{ site_settings.contact_phone }}
+            </div>
+            <div class="order-meta">
+                <span class="order-id">#{{ site_settings.invoice_prefix }}-{{ order.id }}</span>
+                <span class="date">{{ order.created_at|date:"d/m/Y" }}</span>
+            </div>
+        </div>
+
+        <div class="recipient-info">
+            <span class="ship-to-label">Ship To:</span>
+            <h1>{{ order.delivery_address.full_name|default:order.guest_name }}</h1>
+            <p>{{ order.delivery_address.address_line_1|default:order.guest_address }}</p>
+            {% if order.delivery_address.address_line_2 %}<p>{{ order.delivery_address.address_line_2 }}</p>{% endif %}
+            <p>{{ order.delivery_address.city|upper }}, {{ order.delivery_address.state|upper }}</p>
+            <div class="pincode-box">PIN: {{ order.delivery_address.pincode }}</div>
+            <p style="margin-top: 15px;">PH: {{ order.delivery_address.phone|default:order.guest_phone }}</p>
+        </div>
+
+        <div class="logistics-strip">
+            <div class="logistics-item">
+                COURIER PARTNER
+                <strong>{{ order.courier_name|default:"Standard Delivery" }}</strong>
+            </div>
+            <div class="logistics-item" style="text-align: right;">
+                TRACKING ID
+                <strong>{{ order.tracking_id|default:"Awaiting Pick-up" }}</strong>
+            </div>
+        </div>
+
+        <div class="barcode-section">
+            <p class="barcode-font">{{ order.id }}</p>
+            <div style="font-weight: 700; letter-spacing: 5px; font-size: 12px; margin-top: -5px;">*{{ site_settings.invoice_prefix }}{{ order.id }}*</div>
+        </div>
+
+    </div>
+
+    <div class="no-print" style="position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);">
+        <button onclick="window.print()" style="background: black; color: white; border: none; padding: 12px 30px; border-radius: 5px; font-weight: 700; cursor: pointer;">
+            Print Shipping Label
+        </button>
+    </div>
+</body>
+</html>

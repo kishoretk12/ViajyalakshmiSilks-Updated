@@ -1,0 +1,159 @@
+{% extends "pages/base.html" %}
+{% load i18n %}
+{% load static %}
+
+{% block title %}Sign Up Via Google | {{ site_settings.store_name }}{% endblock %}
+
+{% block content %}
+<style>
+.auth-wrapper {
+    min-height: 75vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+}
+
+.auth-card {
+    background: var(--white);
+    max-width: 480px;
+    width: 100%;
+    border-radius: var(--radius-lg);
+    padding: 45px;
+    box-shadow: var(--shadow-lg);
+    text-align: center;
+    border: 1px solid rgba(192, 138, 62, 0.15);
+    animation: fadeIn 0.6s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.auth-icon {
+    width: 64px;
+    height: 64px;
+    background: #fdf6ec;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 25px;
+    color: var(--gold);
+    font-size: 28px;
+    box-shadow: 0 4px 15px rgba(192, 138, 62, 0.1);
+}
+
+.auth-card h1 {
+    font-family: var(--font-heading);
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--primary);
+    margin-bottom: 12px;
+}
+
+.auth-card p {
+    color: var(--text-muted);
+    font-size: 15px;
+    line-height: 1.6;
+    margin-bottom: 35px;
+}
+
+.btn-continue {
+    width: 100%;
+    background: var(--primary);
+    color: var(--white);
+    padding: 14px 20px;
+    border: none;
+    border-radius: var(--radius-md);
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--transition);
+    box-shadow: 0 6px 20px rgba(59, 31, 15, 0.15);
+}
+
+.btn-continue:hover {
+    background: var(--primary-mid);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(59, 31, 15, 0.25);
+}
+
+.btn-cancel {
+    display: inline-block;
+    margin-top: 20px;
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    transition: color 0.2s;
+}
+
+.btn-cancel:hover {
+    color: var(--primary);
+}
+
+.form-group {
+    margin-bottom: 20px;
+    text-align: left;
+}
+
+.form-label {
+    display: block;
+    margin-bottom: 8px;
+    color: var(--text-dark);
+    font-weight: 600;
+}
+
+.form-input {
+    width: 100%;
+    padding: 12px 15px;
+    border: 2px solid #e1e8ed;
+    border-radius: var(--radius-sm);
+    font-size: 1rem;
+    transition: border-color 0.3s ease;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: var(--gold);
+    box-shadow: 0 0 0 3px rgba(192, 138, 62, 0.1);
+}
+</style>
+
+<div class="auth-wrapper">
+    <div class="auth-card">
+        <div class="auth-icon">
+            <i class="fa-brands fa-google"></i>
+        </div>
+        
+        <h1>{% trans "Sign Up Via Google" %}</h1>
+        <p>{% blocktrans with provider.name as provider_name %}You are about to use your {{ provider_name }} account to sign up.{% endblocktrans %}</p>
+
+        <form class="signup" id="signup_form" method="post" action="{% url 'socialaccount_signup' %}">
+            {% csrf_token %}
+            
+            {% for field in form %}
+                <div class="form-group">
+                    <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.errors %}
+                        <span class="text-danger">{{ field.errors }}</span>
+                    {% endif %}
+                </div>
+            {% endfor %}
+
+            {% if redirect_field_value %}
+                <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
+            {% endif %}
+
+            <button type="submit" class="btn-continue">{% trans "Sign Up" %}</button>
+        </form>
+
+        <a href="{% url 'login' %}" class="btn-cancel">
+            <i class="fa-solid fa-arrow-left me-1"></i> {% trans "Cancel and go back" %}
+        </a>
+    </div>
+</div>
+{% endblock %}

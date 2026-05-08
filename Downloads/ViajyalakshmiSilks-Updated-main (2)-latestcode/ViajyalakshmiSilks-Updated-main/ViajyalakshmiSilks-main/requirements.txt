@@ -1,0 +1,10 @@
+Django==5.2.4
+python-dotenv==1.2.1
+twilio==9.8.8
+razorpay==2.0.0
+gunicorn==23.0.0
+dotenv
+django-storages
+boto3
+psycopg2-binary
+whitenoise

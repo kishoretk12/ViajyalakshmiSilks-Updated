@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify Your Account - Vijayalakshmi Silks</title>
+    <style>
+        body { font-family: 'Playfair Display', Georgia, serif; background-color: #f5efe7; margin: 0; padding: 0; color: #3b1f0f; }
+        .container { max-width: 600px; margin: 40px auto; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 30px rgba(59,31,15,0.1); border: 1px solid #e8c47a; }
+        .header { background: linear-gradient(135deg, #1a0d06 0%, #3b1f0f 100%); padding: 40px 20px; text-align: center; border-bottom: 3px solid #c08a3e; }
+        .logo { font-size: 28px; font-weight: 700; color: #e8c47a; letter-spacing: 1px; text-decoration: none; }
+        .logo span { color: #ffffff; font-style: italic; font-weight: 400; }
+        .content { padding: 40px; text-align: center; }
+        .welcome-text { font-size: 24px; font-weight: 700; margin-bottom: 20px; color: #1a0d06; }
+        .instruction { font-size: 16px; color: #7a6355; margin-bottom: 30px; line-height: 1.6; }
+        .otp-container { background: #fdf6ec; border: 2px dashed #c08a3e; border-radius: 12px; padding: 20px; margin: 20px 0; display: inline-block; }
+        .otp-code { font-size: 42px; font-weight: 800; color: #9a6b28; letter-spacing: 10px; margin: 0; }
+        .expiry { font-size: 13px; color: #9a6b28; margin-top: 10px; font-weight: 600; }
+        .footer { background-color: #faf6f1; padding: 30px; text-align: center; border-top: 1px solid #eee; }
+        .social-links { margin-bottom: 20px; }
+        .social-links a { display: inline-block; margin: 0 10px; color: #c08a3e; text-decoration: none; font-size: 14px; font-weight: 600; }
+        .contact-info { font-size: 13px; color: #7a6355; line-height: 1.8; }
+        .contact-info strong { color: #3b1f0f; }
+        .copyright { font-size: 12px; color: #a0aec0; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">Vijayalakshmi <span>Silks</span></div>
+        </div>
+        <div class="content">
+            <div class="welcome-text">Verify Your Email</div>
+            <p class="instruction">Welcome to the world of pure Kanchipuram heritage. To complete your registration, please use the following One-Time Password (OTP):</p>
+            
+            <div class="otp-container">
+                <div class="otp-code">{{ otp }}</div>
+                <div class="expiry">Valid for 10 minutes</div>
+            </div>
+            
+            <p class="instruction" style="margin-top: 30px;">If you didn't request this code, you can safely ignore this email.</p>
+        </div>
+        <div class="footer">
+            <div class="social-links">
+                <a href="https://instagram.com/vijayalakshmisilks">Instagram</a>
+                <a href="{{ site_settings.site_url|default:'#' }}">Website</a>
+                <a href="mailto:{{ site_settings.email }}">Support</a>
+            </div>
+            <div class="contact-info">
+                <strong>Contact Us:</strong> {{ site_settings.contact_phone }}<br>
+                <strong>Email:</strong> {{ site_settings.email }}<br>
+                <strong>Location:</strong> {{ site_settings.address }}
+            </div>
+            <div class="copyright">
+                &copy; 2026 Vijayalakshmi Silks. All rights reserved.
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,411 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load custom_filters %}
+
+{% block content %}
+<style>
+    :root {
+        --primary: #1a0d06;
+        --accent: #c08a3e;
+        --gold-light: #e8c47a;
+        --bg-cream: #fdf6ec;
+        --text-muted: #7a6355;
+    }
+
+    body {
+        background-color: var(--bg-cream);
+    }
+
+    .checkout-wrapper {
+        max-width: 1200px;
+        margin: 60px auto;
+        padding: 0 24px;
+    }
+
+    .checkout-grid {
+        display: grid;
+        grid-template-columns: 1.5fr 1fr;
+        gap: 40px;
+        align-items: start;
+    }
+
+    @media (max-width: 991px) {
+        .checkout-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    /* Left Column: Order Details */
+    .section-card {
+        background: white;
+        border-radius: 24px;
+        padding: 40px;
+        box-shadow: 0 10px 40px rgba(59, 31, 15, 0.05);
+        border: 1px solid rgba(192, 138, 62, 0.1);
+    }
+
+    .checkout-title {
+        font-family: 'Playfair Display', serif;
+        font-size: 32px;
+        font-weight: 700;
+        color: var(--primary);
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .checkout-subtitle {
+        color: var(--text-muted);
+        font-size: 15px;
+        margin-bottom: 40px;
+    }
+
+    .order-item-row {
+        display: flex;
+        gap: 20px;
+        padding: 20px 0;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .order-item-img {
+        width: 80px;
+        height: 100px;
+        object-fit: cover;
+        border-radius: 8px;
+        background: #f8f8f8;
+    }
+
+    .order-item-info {
+        flex: 1;
+    }
+
+    .order-item-name {
+        font-weight: 700;
+        color: var(--primary);
+        font-size: 16px;
+        margin-bottom: 4px;
+    }
+
+    .order-item-qty {
+        font-size: 14px;
+        color: var(--text-muted);
+    }
+
+    .order-item-price {
+        font-weight: 700;
+        color: var(--primary);
+        font-size: 16px;
+    }
+
+    /* Right Column: Summary & Payment */
+    .summary-card {
+        background: var(--primary);
+        color: white;
+        border-radius: 24px;
+        padding: 40px;
+        position: sticky;
+        top: 100px;
+        box-shadow: 0 20px 50px rgba(26, 13, 6, 0.2);
+    }
+
+    .summary-title {
+        font-family: 'Playfair Display', serif;
+        font-size: 24px;
+        margin-bottom: 30px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        padding-bottom: 15px;
+    }
+
+    .summary-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 15px;
+        font-size: 15px;
+        color: rgba(255, 255, 255, 0.7);
+    }
+
+    .summary-row.total {
+        margin-top: 25px;
+        padding-top: 20px;
+        border-top: 1px solid rgba(255, 255, 255, 0.2);
+        color: white;
+        font-weight: 700;
+        font-size: 20px;
+    }
+
+    .payment-badge {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        background: rgba(255, 255, 255, 0.05);
+        padding: 12px 20px;
+        border-radius: 12px;
+        margin: 30px 0;
+        font-size: 13px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .payment-badge i {
+        color: var(--accent);
+    }
+
+    .pay-btn {
+        width: 100%;
+        background: linear-gradient(135deg, var(--accent), #9a6b28);
+        color: white;
+        border: none;
+        padding: 20px;
+        border-radius: 16px;
+        font-size: 18px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.3s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        box-shadow: 0 10px 30px rgba(192, 138, 62, 0.3);
+    }
+
+    .pay-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 15px 40px rgba(192, 138, 62, 0.4);
+        filter: brightness(1.1);
+    }
+
+    .back-to-cart {
+        display: block;
+        text-align: center;
+        margin-top: 25px;
+        color: rgba(255, 255, 255, 0.5);
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 500;
+        transition: color 0.3s;
+    }
+
+    .back-to-cart:hover {
+        color: var(--accent);
+    }
+
+    .shipping-info {
+        margin-top: 40px;
+        padding-top: 30px;
+        border-top: 1px solid #f0f0f0;
+    }
+
+    .info-title {
+        font-weight: 700;
+        color: var(--primary);
+        font-size: 14px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .address-details {
+        font-size: 15px;
+        color: var(--text-muted);
+        line-height: 1.6;
+    }
+</style>
+
+<div class="checkout-wrapper">
+    <div class="checkout-grid">
+        <!-- Order Content -->
+        <div class="section-card">
+            <h1 class="checkout-title">
+                <i class="fa-solid fa-bag-shopping"></i>
+                Review Your Order
+            </h1>
+            <p class="checkout-subtitle">Please confirm your items and shipping details before proceeding.</p>
+
+            <div class="order-items-list">
+                {% for order in orders %}
+                <div class="order-item-row">
+                    {% if order.saree.main_image %}
+                        <img src="{{ order.saree.main_image.url }}" class="order-item-img" alt="{{ order.saree.name }}">
+                    {% else %}
+                        <div class="order-item-img" style="display:flex;align-items:center;justify-content:center;background:#faf6f1;">
+                            <i class="fa-solid fa-image" style="color:#dcc6b8;"></i>
+                        </div>
+                    {% endif %}
+                    <div class="order-item-info">
+                        <div class="order-item-name">{{ order.saree.name }}</div>
+                        <div class="order-item-qty">Quantity: {{ order.quantity }}</div>
+                    </div>
+                    <div class="order-item-price">{{ site_settings.currency_symbol }}{{ order.amount }}</div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <div class="shipping-info">
+                <div class="info-title">
+                    <i class="fa-solid fa-location-dot"></i>
+                    Shipping To
+                </div>
+                <div class="address-details">
+                    <strong>{{ address.full_name }}</strong><br>
+                    {{ address.address_line_1 }}<br>
+                    {% if address.address_line_2 %}{{ address.address_line_2 }}<br>{% endif %}
+                    {{ address.city }}, {{ address.state }} - {{ address.pincode }}<br>
+                    <i class="fa-solid fa-phone" style="font-size:12px;margin-right:5px;"></i> {{ address.phone }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Summary & Payment -->
+        <div class="summary-card">
+            <h2 class="summary-title">Order Summary</h2>
+            
+            <div class="summary-row">
+                <span>Subtotal</span>
+                <span>{{ site_settings.currency_symbol }}{{ total_amount }}</span>
+            </div>
+            {% if discount_amount > 0 %}
+            <div class="summary-row" style="color: var(--gold-light);">
+                <span>Discount ({{ applied_coupon.code }})</span>
+                <span>-{{ site_settings.currency_symbol }}{{ discount_amount }}</span>
+            </div>
+            {% endif %}
+            <div class="summary-row">
+                <span>Shipping</span>
+                {% if site_settings.enable_free_delivery and final_total >= site_settings.free_delivery_min %}
+                <span style="color:var(--accent);font-weight:600;">FREE</span>
+                {% else %}
+                <span>{{ site_settings.currency_symbol }}{{ site_settings.delivery_charge }}</span>
+                {% endif %}
+            </div>
+            
+            {% if site_settings.tax_percentage > 0 %}
+            <div class="summary-row">
+                <span>Tax ({{ site_settings.tax_percentage }}%)</span>
+                <span>{{ site_settings.currency_symbol }}{{ tax_amount|floatformat:2 }}</span>
+            </div>
+            {% endif %}
+            
+            <div class="summary-row total">
+                <span>Total</span>
+                <span>{{ site_settings.currency_symbol }}{% if site_settings.enable_free_delivery and final_total >= site_settings.free_delivery_min %}{{ final_total }}{% else %}{{ final_total|add:site_settings.delivery_charge }}{% endif %}</span>
+            </div>
+
+            <div class="payment-badge">
+                <i class="fa-solid fa-shield-halved"></i>
+                Secured transaction processing
+            </div>
+
+            <div class="payment-actions" style="display: flex; flex-direction: column; gap: 12px; margin-top: 20px;">
+                {% if site_settings.razorpay_enabled or True %} {# Defaulting to true as stripe is currently mapped to test #}
+                <button id="checkout-button" class="pay-btn" style="width: 100%; border-radius: 50px;">
+                    <i class="fa-solid fa-credit-card"></i> Pay Online Securely
+                    <i class="fa-solid fa-arrow-right" style="margin-left: 10px; font-size: 14px;"></i>
+                </button>
+                {% endif %}
+
+                {% if site_settings.cod_enabled %}
+                <form action="{% url 'custom_test_payment' %}" method="POST">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="cod">
+                    <button type="submit" class="pay-btn" style="width: 100%; background: #fdfaf5; color: var(--primary); border: 1.5px solid var(--primary); border-radius: 50px;">
+                        <i class="fa-solid fa-truck-ramp-box"></i> Cash on Delivery
+                        {% if site_settings.cod_charge > 0 %}(+{{ site_settings.currency_symbol }}{{ site_settings.cod_charge }}){% endif %}
+                    </button>
+                </form>
+                {% endif %}
+            </div>
+
+            <a href="{% url 'cart' %}" class="back-to-cart">
+                <i class="fa-solid fa-chevron-left" style="font-size:10px;margin-right:5px;"></i>
+                Return to Shopping Cart
+            </a>
+        </div>
+    </div>
+</div>
+
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+var checkoutButton = document.getElementById('checkout-button');
+
+if (checkoutButton) {
+    checkoutButton.addEventListener('click', function(e) {
+        e.preventDefault();
+        checkoutButton.disabled = true;
+        checkoutButton.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Processing...';
+        
+        fetch("{% url 'initiate_razorpay_checkout' %}", {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                alert(data.error);
+                checkoutButton.disabled = false;
+                checkoutButton.innerHTML = '<i class="fa-solid fa-credit-card"></i> Pay Online Securely';
+                return;
+            }
+            
+            var options = {
+                "key": data.key_id,
+                "amount": data.amount * 100,
+                "currency": "INR",
+                "name": "Vijayalakshmi Silks",
+                "description": "Purchase Transaction",
+                "order_id": data.order_id,
+                "handler": function (response){
+                    fetch("{% url 'verify_razorpay_payment' %}", {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': '{{ csrf_token }}',
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            razorpay_payment_id: response.razorpay_payment_id,
+                            razorpay_order_id: response.razorpay_order_id,
+                            razorpay_signature: response.razorpay_signature
+                        })
+                    })
+                    .then(res => res.json())
+                    .then(verifyData => {
+                        if (verifyData.status === 'success') {
+                            window.location.href = verifyData.redirect_url;
+                        } else {
+                            alert(verifyData.error || "Verification Failed");
+                            checkoutButton.disabled = false;
+                            checkoutButton.innerHTML = '<i class="fa-solid fa-credit-card"></i> Pay Online Securely';
+                        }
+                    });
+                },
+                "prefill": {
+                    "name": data.user_name,
+                    "email": data.user_email
+                },
+                "theme": {
+                    "color": "#c08a3e"
+                },
+                "modal": {
+                    "ondismiss": function(){
+                        checkoutButton.disabled = false;
+                        checkoutButton.innerHTML = '<i class="fa-solid fa-credit-card"></i> Pay Online Securely';
+                    }
+                }
+            };
+            var rzp1 = new Razorpay(options);
+            rzp1.open();
+        })
+        .catch(err => {
+            alert("Error reaching payment gateway.");
+            checkoutButton.disabled = false;
+            checkoutButton.innerHTML = '<i class="fa-solid fa-credit-card"></i> Pay Online Securely';
+        });
+    });
+}
+</script>
+{% endblock %}

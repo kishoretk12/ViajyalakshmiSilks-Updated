@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Business Dashboard{% endblock %} | Vijayalakshmi Silks</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary: #3b1f0f;
+            --accent: #c08a3e;
+            --bg-page: #f5efe7;
+            --bg-sidebar: #1a0d06;
+            --text-muted: #7a6355;
+            --white: #ffffff;
+            --success: #27ae60;
+            --warning: #f39c12;
+            --danger: #e74c3c;
+            --sidebar-width: 260px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bg-page);
+            color: var(--primary);
+            overflow-x: hidden;
+        }
+
+        /* Custom Scrollbar (Premium Gold) */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #d4d4d4;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--accent);
+        }
+
+
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Playfair Display', serif;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: var(--sidebar-width);
+            height: 100%;
+            max-height: 100vh;
+            background: var(--bg-sidebar);
+            color: white;
+            padding: 0;
+            z-index: 1100;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow-y: auto !important;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: thin;
+            scrollbar-color: var(--accent) transparent;
+            box-shadow: 10px 0 30px rgba(0,0,0,0.2);
+            overscroll-behavior: contain;
+        }
+
+
+
+        .brand {
+            padding: 30px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 10px;
+            text-align: center;
+            background: rgba(0,0,0,0.2);
+        }
+
+
+        .brand h2 {
+            font-size: 18px;
+            color: var(--accent);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .nav-menu {
+            list-style: none;
+            padding: 0 15px;
+            margin-bottom: 100px;
+        }
+
+
+        .nav-item {
+            margin-bottom: 8px;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 12px 20px;
+            color: rgba(255, 255, 255, 0.7);
+            text-decoration: none;
+            border-radius: 12px;
+            transition: all 0.3s;
+            font-size: 15px;
+        }
+
+        .nav-link i {
+            width: 20px;
+            text-align: center;
+            font-size: 18px;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            background: rgba(192, 138, 62, 0.15);
+            color: var(--accent);
+        }
+
+        .nav-link.active {
+            background: var(--accent);
+            color: white;
+        }
+
+        .sidebar-footer {
+            padding: 20px 15px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            background: var(--bg-sidebar);
+            margin-top: 20px;
+        }
+
+
+        /* Main Content Styles */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            min-height: 100vh;
+            padding: 30px;
+            transition: all 0.3s;
+        }
+
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+            background: white;
+            padding: 15px 30px;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+        }
+
+        .search-box {
+            position: relative;
+            width: 300px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 10px 15px 10px 40px;
+            border-radius: 10px;
+            border: 1px solid #eee;
+            background: #fafafa;
+            outline: none;
+            font-family: inherit;
+        }
+
+        .search-box i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #ccc;
+        }
+
+        .user-actions {
+            display: flex;
+            align-items: center;
+            gap: 25px;
+        }
+
+        .action-icon {
+            font-size: 20px;
+            color: var(--text-muted);
+            cursor: pointer;
+            position: relative;
+        }
+
+        .badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: var(--danger);
+            color: white;
+            font-size: 10px;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .products-wrapper.pdp-similar-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .admin-profile {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding-left: 20px;
+            border-left: 1px solid #eee;
+        }
+
+        .profile-img {
+            width: 40px;
+            height: 40px;
+            background: var(--accent);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+        }
+
+        /* Dashboard Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        @media (max-width: 1200px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            transition: transform 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .stat-info h3 {
+            font-size: 14px;
+            color: var(--text-muted);
+            margin-bottom: 5px;
+            font-family: 'Poppins', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-info .value {
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--primary);
+        }
+
+        /* Table Styles */
+        .content-card {
+            background: white;
+            border-radius: 24px;
+            padding: 30px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+            margin-bottom: 30px;
+        }
+
+        .card-header-flex {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .premium-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .premium-table thead {
+            position: sticky;
+            top: 0;
+            background: #fff;
+            z-index: 10;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+        }
+
+        .premium-table th {
+            text-align: left;
+            padding: 15px 20px;
+            border-bottom: 2px solid #f0f0f0;
+            color: var(--text-muted);
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            font-weight: 800;
+        }
+
+
+        .premium-table tr {
+            transition: all 0.2s ease;
+        }
+
+        .premium-table tbody tr:hover {
+            background: rgba(192, 138, 62, 0.03);
+            transform: translateX(5px);
+        }
+
+        .premium-table td {
+            padding: 15px 20px;
+            border-bottom: 1px solid #f8f8f8;
+            font-size: 14px;
+            transition: all 0.2s ease;
+        }
+
+
+        /* Responsive Form Grid */
+        .fulfillment-form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            align-items: end;
+        }
+        .fulfillment-form-grid .full-width {
+            grid-column: span 2;
+        }
+
+        /* Order Item Card (Responsive) */
+        .order-item-card {
+            display: flex;
+            gap: 25px;
+            padding: 25px;
+            background: #fdfaf5;
+            border-radius: 20px;
+            border: 1px solid rgba(192, 138, 62, 0.1);
+        }
+        .order-item-card .item-img {
+            width: 120px;
+            height: 160px;
+            object-fit: cover;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .order-item-card .item-info {
+            flex-grow: 1;
+        }
+        .order-item-card .item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 20px;
+        }
+        .order-item-card .item-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 20px;
+        }
+        .order-item-card .stat-label {
+            font-size: 11px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+        .order-item-card .stat-val {
+            font-size: 16px;
+            font-weight: 700;
+        }
+        .order-item-card .stat-total .stat-val {
+            font-size: 20px;
+            font-weight: 800;
+            color: var(--accent);
+        }
+
+        @media (max-width: 768px) {
+            .fulfillment-form-grid {
+                grid-template-columns: 1fr;
+            }
+            .fulfillment-form-grid .full-width {
+                grid-column: span 1;
+            }
+            .order-item-card {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+                gap: 15px;
+            }
+            .order-item-card .item-header {
+                flex-direction: column;
+                align-items: center;
+                gap: 10px;
+            }
+            .order-item-card .item-stats {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+            .order-item-card .stat-total {
+                border-top: 1px dashed rgba(192, 138, 62, 0.2);
+                padding-top: 15px;
+            }
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: none;
+            font-family: inherit;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+        }
+
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-accent { background: var(--accent); color: white; }
+        .btn-outline { background: transparent; border: 1px solid #eee; color: var(--text-muted); }
+
+        .status-pill {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-pending { background: #fff3cd; color: #856404; }
+        .status-processing { background: #cfe2ff; color: #084298; }
+        .status-shipped { background: #d1e7dd; color: #0f5132; }
+
+        /* Mobile Adjustments */
+        .mobile-header {
+            display: none;
+            background: var(--bg-sidebar);
+            color: white;
+            padding: 15px 20px;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 1100;
+        }
+
+        /* MOBILE OPTIMIZATIONS (100% RESPONSIVE) */
+        @media (max-width: 991px) {
+            .sidebar {
+                left: -100%;
+                width: 280px;
+                transition: left 0.3s ease;
+            }
+            .sidebar.active {
+                left: 0;
+            }
+            .main-content {
+                margin-left: 0 !important;
+                padding: 15px !important;
+            }
+            .mobile-header {
+                display: flex !important;
+            }
+            .top-bar {
+                display: none !important;
+            }
+            .stats-grid {
+                grid-template-columns: 1fr !important;
+                gap: 15px !important;
+            }
+            .header-section {
+                flex-direction: column !important;
+                align-items: flex-start !important;
+                gap: 15px !important;
+                margin-bottom: 25px !important;
+            }
+            .header-section h1 {
+                font-size: 24px !important;
+            }
+            .btn-accent {
+                width: 100% !important;
+                justify-content: center !important;
+            }
+            
+            /* Responsive Table (Card Layout) */
+            .premium-table {
+                display: block !important;
+                border: none !important;
+            }
+            .premium-table thead {
+                display: none !important;
+            }
+            .premium-table tbody, .premium-table tr, .premium-table td {
+                display: block !important;
+                width: 100% !important;
+            }
+            .premium-table tr {
+                margin-bottom: 20px !important;
+                border: 1px solid #eee !important;
+                border-radius: 15px !important;
+                background: #fff !important;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.03) !important;
+                overflow: hidden !important;
+            }
+            .premium-table td {
+                text-align: right !important;
+                padding: 12px 20px !important;
+                position: relative !important;
+                border-bottom: 1px solid #f8f8f8 !important;
+                min-height: 45px !important;
+            }
+            .premium-table td:last-child {
+                border-bottom: none !important;
+                background: #fcfcfc !important;
+                text-align: center !important;
+            }
+            .premium-table td::before {
+                content: attr(data-label);
+                position: absolute;
+                left: 20px;
+                font-weight: 700;
+                color: var(--text-muted);
+                text-transform: uppercase;
+                font-size: 11px;
+                top: 50%;
+                transform: translateY(-50%);
+            }
+            /* Adjustments for content inside TD */
+            .premium-table td > div {
+                justify-content: flex-end !important;
+            }
+            .card-header-flex {
+                flex-direction: column !important;
+                gap: 15px !important;
+            }
+            .search-box {
+                width: 100% !important;
+            }
+            .filters {
+                width: 100% !important;
+            }
+            .filters select {
+                width: 100% !important;
+            }
+            /* Ultimate Mobile Overrides */
+            .row, .grid, .grid-2, .grid-3 {
+                grid-template-columns: 1fr !important;
+                gap: 20px !important;
+            }
+            .content-card {
+                padding: 20px !important;
+                border-radius: 12px !important;
+            }
+            .btn {
+                padding: 12px 20px !important;
+            }
+            .settings-nav {
+                margin: -15px -15px 20px -15px;
+                border-radius: 0;
+                padding: 15px;
+                border-bottom: 1px solid #eee;
+                box-shadow: none;
+            }
+            .sidebar-overlay {
+                display: none;
+                position: fixed;
+                top: 0; left: 0;
+                width: 100%; height: 100%;
+                background: rgba(0,0,0,0.5);
+                z-index: 999;
+            }
+            .sidebar-overlay.active {
+                display: block;
+            }
+            .back-to-top {
+                width: 44px !important;
+                height: 44px !important;
+                bottom: 20px !important;
+                right: 20px !important;
+            }
+        }
+
+        .back-to-top {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 50px;
+            height: 50px;
+            background: var(--accent);
+            color: white;
+            border-radius: 50%;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 2000;
+            box-shadow: 0 10px 20px rgba(192, 138, 62, 0.3);
+            transition: all 0.3s;
+            border: none;
+        }
+        .back-to-top:hover {
+            transform: translateY(-5px);
+            background: var(--primary);
+        }
+
+        .fade-in {
+            animation: fadeIn 0.6s ease-out forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+    <!-- Mobile Header -->
+    <div class="mobile-header">
+        <h2 style="font-size: 16px;">{{ site_settings.store_name|truncatechars:15 }}</h2>
+        <button id="sidebarToggle" style="background:transparent; border:none; color:white; font-size: 20px;">
+            <i class="fa-solid fa-bars"></i>
+        </button>
+    </div>
+
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="brand">
+            <h2>{{ site_settings.store_name|truncatechars:12 }}</h2>
+        </div>
+        
+        <ul class="nav-menu">
+            <li class="nav-item">
+                <a href="{% url 'dashboard_home' %}" class="nav-link {% if request.resolver_match.url_name == 'dashboard_home' %}active{% endif %}">
+                    <i class="fa-solid fa-chart-line"></i>
+                    Dashboard
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'dashboard_products' %}" class="nav-link {% if 'products' in request.path %}active{% endif %}">
+                    <i class="fa-solid fa-box"></i>
+                    Products
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'dashboard_orders' %}" class="nav-link {% if 'orders' in request.path %}active{% endif %}">
+                    <i class="fa-solid fa-shopping-bag"></i>
+                    Orders
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'dashboard_collections' %}" class="nav-link {% if 'collections' in request.path %}active{% endif %}">
+                    <i class="fa-solid fa-layer-group"></i>
+                    Collections
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'dashboard_customers' %}" class="nav-link {% if 'customers' in request.path %}active{% endif %}">
+                    <i class="fa-solid fa-users"></i>
+                    Customers
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'dashboard_coupons' %}" class="nav-link {% if 'coupons' in request.path %}active{% endif %}">
+                    <i class="fa-solid fa-ticket"></i>
+                    Coupons
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'dashboard_settings' %}" class="nav-link {% if 'settings' in request.path %}active{% endif %}">
+                    <i class="fa-solid fa-cog"></i>
+                    Settings
+                </a>
+            </li>
+        </ul>
+
+        <div class="sidebar-footer">
+            <a href="/" class="nav-link">
+                <i class="fa-solid fa-eye"></i>
+                View Site
+            </a>
+            <a href="{% url 'logout' %}" class="nav-link">
+                <i class="fa-solid fa-right-from-bracket"></i>
+                Logout
+            </a>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content fade-in">
+
+        <!-- Top Bar -->
+        <div class="top-bar">
+            <div class="search-box">
+                <i class="fa-solid fa-search"></i>
+                <input type="text" placeholder="Search orders, products...">
+            </div>
+            
+            <div class="user-actions">
+                
+                <div class="admin-profile">
+                    <div class="profile-img">{% if site_settings.logo %} <img src="{{ site_settings.logo.url }}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;"> {% else %}AD{% endif %}</div>
+                    <div style="font-size: 14px; font-weight: 600;">{{ site_settings.store_name }} Admin</div>
+                </div>
+            </div>
+        </div>
+
+
+
+        {% block dashboard_content %}{% endblock %}
+    </div>
+
+    <button class="back-to-top" id="backToTop">
+        <i class="fa-solid fa-arrow-up"></i>
+    </button>
+
+    <script>
+        // Back to top logic
+        const btt = document.getElementById('backToTop');
+        window.addEventListener('scroll', () => {
+            if (window.pageYOffset > 300) {
+                btt.style.display = 'flex';
+            } else {
+                btt.style.display = 'none';
+            }
+        });
+        btt.addEventListener('click', () => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+
+        document.getElementById('sidebarToggle').addEventListener('click', function() {
+
+            document.getElementById('sidebar').classList.add('active');
+            document.getElementById('sidebarOverlay').classList.add('active');
+            document.body.style.overflow = 'hidden'; // Lock body scroll when sidebar open
+        });
+
+        document.getElementById('sidebarOverlay').addEventListener('click', function() {
+            document.getElementById('sidebar').classList.remove('active');
+            this.classList.remove('active');
+            document.body.style.overflow = ''; // Unlock body scroll
+        });
+    </script>
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,110 @@
+{% extends 'dashboard/base_dashboard.html' %}
+{% load static %}
+
+{% block title %}Products Management{% endblock %}
+
+{% block dashboard_content %}
+<div class="header-section" style="margin-bottom: 40px; display: flex; justify-content: space-between; align-items: center;">
+    <div>
+        <h1 style="font-size: 32px; margin-bottom: 5px;">Products Inventory</h1>
+        <p style="color: var(--text-muted);">Manage your saree collection and stock levels.</p>
+    </div>
+    <a href="{% url 'product_add' %}" class="btn btn-accent" style="padding: 12px 25px;">
+        <i class="fa-solid fa-plus"></i> Add New Product
+    </a>
+</div>
+
+<div class="content-card">
+    <div class="card-header-flex">
+        <div class="search-box">
+            <form method="GET">
+                <i class="fa-solid fa-search"></i>
+                <input type="text" name="search" placeholder="Search by name..." value="{{ request.GET.search }}">
+            </form>
+        </div>
+        <div class="filters" style="display: flex; gap: 10px;">
+            <select class="btn btn-outline" style="font-size: 13px;">
+                <option>All Categories</option>
+                <option>Featured</option>
+                <option>Best Seller</option>
+            </select>
+        </div>
+    </div>
+
+    <div style="overflow-x: auto;">
+        <table class="premium-table">
+            <thead>
+                <tr>
+                    <th>Product</th>
+                    <th>Price</th>
+                    <th>Stock</th>
+                    <th>Status</th>
+                    <th>Marketing</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for product in products %}
+                <tr>
+                    <td data-label="Product">
+                        <div style="display: flex; align-items: center; gap: 15px;">
+                            {% if product.main_image %}
+                            <img src="{{ product.main_image.url }}" style="width: 50px; height: 65px; object-fit: cover; border-radius: 8px; border: 1px solid #f0f0f0;">
+                            {% endif %}
+                            <div>
+                                <div style="font-weight: 700; color: var(--primary);">{{ product.name }}</div>
+                                <div style="font-size: 12px; color: var(--text-muted);">ID: #PROD{{ product.id }}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td data-label="Price" style="font-weight: 700;">{{ site_settings.currency_symbol }}{{ product.price }}</td>
+                    <td data-label="Stock">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span style="font-weight: 600;">{{ product.stock_quantity }}</span>
+                            {% if product.stock_quantity < 5 %}
+                            <span style="color: var(--danger); font-size: 11px; font-weight: 700;">LOW STOCK</span>
+                            {% endif %}
+                        </div>
+                    </td>
+                    <td data-label="Status">
+                        {% if product.available %}
+                        <span style="display: flex; align-items: center; gap: 5px; color: var(--success); font-weight: 700; font-size: 13px;">
+                            <i class="fa-solid fa-circle" style="font-size: 8px;"></i> Active
+                        </span>
+                        {% else %}
+                        <span style="display: flex; align-items: center; gap: 5px; color: var(--danger); font-weight: 700; font-size: 13px;">
+                            <i class="fa-solid fa-circle" style="font-size: 8px;"></i> Hidden
+                        </span>
+                        {% endif %}
+                    </td>
+                    <td data-label="Marketing">
+                        <div style="display: flex; gap: 5px; flex-wrap: wrap;">
+                            {% if product.is_featured %}<span style="font-size: 10px; background: #e3f2fd; color: #1565c0; padding: 2px 8px; border-radius: 4px; font-weight: 700;">FEATURED</span>{% endif %}
+                            {% if product.is_best_seller %}<span style="font-size: 10px; background: #fff3e0; color: #e65100; padding: 2px 8px; border-radius: 4px; font-weight: 700;">BEST SELLER</span>{% endif %}
+                            {% if product.is_new_arrival %}<span style="font-size: 10px; background: #f3e5f5; color: #7b1fa2; padding: 2px 8px; border-radius: 4px; font-weight: 700;">NEW</span>{% endif %}
+                        </div>
+                    </td>
+                    <td data-label="Actions">
+                        <div style="display: flex; gap: 10px;">
+                            <a href="{% url 'product_edit' product.pk %}" class="btn btn-outline" style="padding: 8px; font-size: 14px; width: 35px; height: 35px; justify-content: center; color: var(--primary);">
+                                <i class="fa-solid fa-pen"></i>
+                            </a>
+                            <a href="{% url 'toggle_product_status' product.pk %}" class="btn btn-outline" title="Toggle Visibility" style="padding: 8px; font-size: 14px; width: 35px; height: 35px; justify-content: center; color: {% if product.available %}#e67e22{% else %}#27ae60{% endif %};">
+                                <i class="fa-solid {% if product.available %}fa-eye-slash{% else %}fa-eye{% endif %}"></i>
+                            </a>
+                            <a href="{% url 'product_delete' product.pk %}" class="btn btn-outline" onclick="return confirm('Delete this product?')" style="padding: 8px; font-size: 14px; width: 35px; height: 35px; justify-content: center; color: var(--danger);">
+                                <i class="fa-solid fa-trash"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" style="text-align: center; padding: 50px; color: var(--text-muted);">No products found matching your search.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

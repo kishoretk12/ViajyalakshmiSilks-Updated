@@ -1,0 +1,317 @@
+[
+{
+  "model": "products.userprofile",
+  "pk": 1,
+  "fields": {
+    "user": [
+      "bharat7"
+    ],
+    "mobile_number": "+911234567899"
+  }
+},
+{
+  "model": "products.userprofile",
+  "pk": 3,
+  "fields": {
+    "user": [
+      "kishore"
+    ],
+    "mobile_number": "Not provided"
+  }
+},
+{
+  "model": "products.userprofile",
+  "pk": 4,
+  "fields": {
+    "user": [
+      "bharat07"
+    ],
+    "mobile_number": "+917425074114"
+  }
+},
+{
+  "model": "products.userprofile",
+  "pk": 6,
+  "fields": {
+    "user": [
+      "bharat007"
+    ],
+    "mobile_number": "+917425074114"
+  }
+},
+{
+  "model": "products.userprofile",
+  "pk": 7,
+  "fields": {
+    "user": [
+      "praveen"
+    ],
+    "mobile_number": "7868093357"
+  }
+},
+{
+  "model": "products.userprofile",
+  "pk": 8,
+  "fields": {
+    "user": [
+      "Kumar"
+    ],
+    "mobile_number": "6381230383"
+  }
+},
+{
+  "model": "products.userprofile",
+  "pk": 9,
+  "fields": {
+    "user": [
+      "M"
+    ],
+    "mobile_number": "7540013689"
+  }
+},
+{
+  "model": "products.address",
+  "pk": 4,
+  "fields": {
+    "user": [
+      "bharat007"
+    ],
+    "name": "myhome",
+    "full_name": "Bharat Kasera",
+    "phone": "+917425074114",
+    "address_line_1": "Subhash nagar near by kushmanda devi temple",
+    "address_line_2": "",
+    "city": "Jhalrapatan",
+    "state": "Rajasthan",
+    "pincode": "326023",
+    "is_default": true,
+    "created_at": "2025-08-07T12:41:15.146Z"
+  }
+},
+{
+  "model": "products.address",
+  "pk": 6,
+  "fields": {
+    "user": [
+      "kishore"
+    ],
+    "name": "yelankha",
+    "full_name": "kishore",
+    "phone": "+919791579731",
+    "address_line_1": "No 57",
+    "address_line_2": "Kamatchi Nagar",
+    "city": "Kanchipuram",
+    "state": "Tamil Nadu",
+    "pincode": "631501",
+    "is_default": true,
+    "created_at": "2025-12-04T04:24:38.111Z"
+  }
+},
+{
+  "model": "products.address",
+  "pk": 7,
+  "fields": {
+    "user": [
+      "praveen"
+    ],
+    "name": "Exit Group",
+    "full_name": "praveen chakaravathy",
+    "phone": "+917868093357",
+    "address_line_1": "bharathi nagar ",
+    "address_line_2": "",
+    "city": "manamdurai",
+    "state": "tamilnadu",
+    "pincode": "630606",
+    "is_default": false,
+    "created_at": "2025-12-04T04:29:26.069Z"
+  }
+},
+{
+  "model": "products.saree",
+  "pk": 4,
+  "fields": {
+    "name": "Gubera Saree",
+    "price": 1050,
+    "description": "Experience elegance and comfort with our beautifully crafted Gubera Saree, designed for women who love traditional charm with a modern touch. Made from soft, lightweight fabric, this saree drapes effortlessly and is perfect for daily wear, office, small functions, and gifting.\r\n\r\n✨ Features:\r\n\r\nSoft and comfortable fabric\r\n\r\nLightweight & easy to drape\r\n\r\nBeautiful woven patterns\r\n\r\nIdeal for daily wear and festive occasions\r\n\r\nPerfect gift for loved ones\r\n\r\n🎁 What You Get:\r\n1 Gubera Saree (Unstitched blouse included)\r\n\r\nA stylish saree at an affordable price — perfect for all ages!",
+    "main_image": "sarees/WhatsApp_Image_2025-12-06_at_10.08.16_AM.jpeg",
+    "extra_image1": "sarees/WhatsApp_Image_2025-12-06_at_10.08.16_AM_1.jpeg",
+    "extra_image2": "sarees/WhatsApp_Image_2025-12-06_at_10.08.17_AM.jpeg",
+    "extra_image3": "",
+    "available": true
+  }
+},
+{
+  "model": "products.saree",
+  "pk": 5,
+  "fields": {
+    "name": "Gubera Saree",
+    "price": 1050,
+    "description": "Experience elegance and comfort with our beautifully crafted Gubera Saree, designed for women who love traditional charm with a modern touch. Made from soft, lightweight fabric, this saree drapes effortlessly and is perfect for daily wear, office, small functions, and gifting.\r\n\r\n✨ Features:\r\n\r\nSoft and comfortable fabric\r\n\r\nLightweight & easy to drape\r\n\r\nBeautiful woven patterns\r\n\r\nIdeal for daily wear and festive occasions\r\n\r\nPerfect gift for loved ones\r\n\r\n🎁 What You Get:\r\n1 Gubera Saree (Unstitched blouse included)\r\n\r\nA stylish saree at an affordable price — perfect for all ages!",
+    "main_image": "sarees/WhatsApp_Image_2025-12-06_at_10.12.24_AM.jpeg",
+    "extra_image1": "sarees/WhatsApp_Image_2025-12-06_at_10.12.24_AM_1.jpeg",
+    "extra_image2": "sarees/WhatsApp_Image_2025-12-06_at_10.12.25_AM.jpeg",
+    "extra_image3": "",
+    "available": true
+  }
+},
+{
+  "model": "products.saree",
+  "pk": 6,
+  "fields": {
+    "name": "TS",
+    "price": 2500,
+    "description": "Experience elegance and comfort with our beautifully crafted Gubera Saree, designed for women who love traditional charm with a modern touch. Made from soft, lightweight fabric, this saree drapes effortlessly and is perfect for daily wear, office, small functions, and gifting.\r\n\r\n✨ Features:\r\n\r\nSoft and comfortable fabric\r\n\r\nLightweight & easy to drape\r\n\r\nBeautiful woven patterns\r\n\r\nIdeal for daily wear and festive occasions\r\n\r\nPerfect gift for loved ones\r\n\r\n🎁 What You Get:\r\n1 Gubera Saree (Unstitched blouse included)\r\n\r\nA stylish saree at an affordable price — perfect for all ages!",
+    "main_image": "sarees/WhatsApp_Image_2025-12-06_at_4.04.15_PM.jpeg",
+    "extra_image1": "sarees/WhatsApp_Image_2025-12-06_at_4.04.27_PM.jpeg",
+    "extra_image2": "sarees/WhatsApp_Image_2025-12-06_at_4.04.47_PM.jpeg",
+    "extra_image3": "",
+    "available": true
+  }
+},
+{
+  "model": "products.saree",
+  "pk": 7,
+  "fields": {
+    "name": "TS",
+    "price": 2500,
+    "description": "Experience elegance and comfort with our beautifully crafted Gubera Saree, designed for women who love traditional charm with a modern touch. Made from soft, lightweight fabric, this saree drapes effortlessly and is perfect for daily wear, office, small functions, and gifting.\r\n\r\n✨ Features:\r\n\r\nSoft and comfortable fabric\r\n\r\nLightweight & easy to drape\r\n\r\nBeautiful woven patterns\r\n\r\nIdeal for daily wear and festive occasions\r\n\r\nPerfect gift for loved ones\r\n\r\n🎁 What You Get:\r\n1 Gubera Saree (Unstitched blouse included)\r\n\r\nA stylish saree at an affordable price — perfect for all ages!",
+    "main_image": "sarees/WhatsApp_Image_2025-12-06_at_4.03.05_PM.jpeg",
+    "extra_image1": "sarees/WhatsApp_Image_2025-12-06_at_4.03.16_PM.jpeg",
+    "extra_image2": "sarees/WhatsApp_Image_2025-12-06_at_4.03.16_PM_1.jpeg",
+    "extra_image3": "sarees/WhatsApp_Image_2025-12-06_at_4.03.26_PM.jpeg",
+    "available": true
+  }
+},
+{
+  "model": "products.saree",
+  "pk": 8,
+  "fields": {
+    "name": "LINEN COTTEN",
+    "price": 1049,
+    "description": "",
+    "main_image": "sarees/WhatsApp_Image_2025-12-08_at_2.57.04_PM.jpeg",
+    "extra_image1": "sarees/WhatsApp_Image_2025-12-08_at_2.57.04_PM_1.jpeg",
+    "extra_image2": "sarees/WhatsApp_Image_2025-12-08_at_2.57.05_PM.jpeg",
+    "extra_image3": "",
+    "available": true
+  }
+},
+{
+  "model": "products.saree",
+  "pk": 9,
+  "fields": {
+    "name": "LINEN COTTEN",
+    "price": 1049,
+    "description": "",
+    "main_image": "sarees/WhatsApp_Image_2025-12-08_at_2.57.22_PM.jpeg",
+    "extra_image1": "sarees/WhatsApp_Image_2025-12-08_at_2.57.22_PM_1.jpeg",
+    "extra_image2": "sarees/WhatsApp_Image_2025-12-08_at_2.57.22_PM_2.jpeg",
+    "extra_image3": "",
+    "available": true
+  }
+},
+{
+  "model": "products.saree",
+  "pk": 10,
+  "fields": {
+    "name": "SOFT SILK",
+    "price": 1049,
+    "description": "",
+    "main_image": "sarees/WhatsApp_Image_2025-12-09_at_1.58.15_PM.jpeg",
+    "extra_image1": "sarees/WhatsApp_Image_2025-12-09_at_1.58.16_PM.jpeg",
+    "extra_image2": "sarees/WhatsApp_Image_2025-12-09_at_1.58.16_PM_1.jpeg",
+    "extra_image3": "",
+    "available": true
+  }
+},
+{
+  "model": "products.saree",
+  "pk": 11,
+  "fields": {
+    "name": "SOFT SILK",
+    "price": 1049,
+    "description": "",
+    "main_image": "sarees/WhatsApp_Image_2025-12-09_at_2.00.12_PM.jpeg",
+    "extra_image1": "sarees/WhatsApp_Image_2025-12-09_at_2.00.12_PM_1.jpeg",
+    "extra_image2": "sarees/WhatsApp_Image_2025-12-09_at_2.00.12_PM_2.jpeg",
+    "extra_image3": "",
+    "available": true
+  }
+},
+{
+  "model": "products.cart",
+  "pk": 2,
+  "fields": {
+    "user": [
+      "bharat07"
+    ],
+    "created_at": "2025-08-07T11:17:50.838Z",
+    "updated_at": "2025-08-07T11:17:50.838Z"
+  }
+},
+{
+  "model": "products.cart",
+  "pk": 4,
+  "fields": {
+    "user": [
+      "praveen"
+    ],
+    "created_at": "2025-12-04T04:28:59.973Z",
+    "updated_at": "2025-12-04T04:28:59.973Z"
+  }
+},
+{
+  "model": "products.cart",
+  "pk": 5,
+  "fields": {
+    "user": [
+      "Kumar"
+    ],
+    "created_at": "2025-12-05T13:43:11.212Z",
+    "updated_at": "2025-12-05T13:43:11.212Z"
+  }
+},
+{
+  "model": "products.cart",
+  "pk": 6,
+  "fields": {
+    "user": [
+      "kishore"
+    ],
+    "created_at": "2025-12-08T07:28:07.866Z",
+    "updated_at": "2025-12-08T07:28:07.866Z"
+  }
+},
+{
+  "model": "products.cartitem",
+  "pk": 15,
+  "fields": {
+    "cart": 5,
+    "saree": 7,
+    "quantity": 1,
+    "added_at": "2025-12-06T14:09:41.214Z"
+  }
+},
+{
+  "model": "products.order",
+  "pk": 26,
+  "fields": {
+    "saree": 4,
+    "user": [
+      "kishore"
+    ],
+    "quantity": 1,
+    "delivery_address": 6,
+    "guest_name": "",
+    "guest_email": "",
+    "guest_phone": "",
+    "guest_address": "",
+    "razorpay_order_id": "order_RozBqvSxIMDhrG",
+    "razorpay_payment_id": "pay_RozCULkEbXBNLR",
+    "razorpay_signature": "ab134d9a7d2a5111525d32803642219d45c87001b299148ab6fb74f433a3cecb",
+    "paid": true,
+    "amount": 10,
+    "created_at": "2025-12-08T04:30:33.822Z"
+  }
+}
+]
