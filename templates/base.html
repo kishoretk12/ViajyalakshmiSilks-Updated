@@ -1,0 +1,25 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Vijayalakshmi Silks</title>
+    <link rel="stylesheet" href="{% static 'style.css' %}">
+</head>
+<body>
+    <header style="background-color: #000; color: white; padding: 10px;">
+        <div style="float: left; font-weight: bold; font-size: 20px;">Vijayalakshmi Silks</div>
+        <nav style="float: right;">
+            <a href="/" style="color: white; margin: 0 10px;">Home</a>
+            <a href="/shop/" style="color: white; margin: 0 10px;">Shop</a>
+            <a href="/cart/" style="color: white; margin: 0 10px;">Cart</a>
+            <a href="/admin/" style="color: white; margin: 0 10px;">Admin</a>
+        </nav>
+        <div style="clear: both;"></div>
+    </header>
+    <main>{% block content %}{% endblock %}</main>
+    <footer style="background-color: #f0f0f0; padding: 20px; text-align: center;">
+        © 2025 Vijayalakshmi Silks
+    </footer>
+</body>
+</html>
+

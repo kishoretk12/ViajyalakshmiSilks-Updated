@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<h2 style="padding: 20px;">Our Sarees</h2>
+<div style="display: flex; flex-wrap: wrap; padding: 20px;">
+    {% for saree in sarees %}
+        <div style="border: 1px solid #ddd; padding: 15px; margin: 10px; width: 250px;">
+            <img src="{{ saree.main_image.url }}" alt="{{ saree.name }}" style="width: 100%; height: 250px; object-fit: cover;">
+            <h3>{{ saree.name }}</h3>
+            <p>₹{{ saree.price }}</p>
+            <a href="{% url 'buy_now' saree.id %}">
+                <button style="background-color: deeppink; color: white; padding: 8px 15px; border: none;">Buy Now</button>
+            </a>
+        </div>
+    {% endfor %}
+</div>
+{% endblock %}
+
